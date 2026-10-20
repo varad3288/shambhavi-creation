@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   SHAMBHAVI FINE JEWELLERY — AURELIA-INSPIRED EDITORIAL LUXURY SYSTEM
+   ========================================================================== */
+
+:root {
+  --sand-50: #FAF8F5;
+  --sand-100: #F5F2EB;
+  --sand-200: #EAE5DC;
+  --bronze-gold: #9E7D4B;
+  --bronze-gold-hover: #866838;
+  --charcoal-900: #1F1E1D;
+  --charcoal-700: #4A4744;
+  --charcoal-500: #78746F;
+  --wa-green: #1FA855;
+}
+
+body {
+  background-color: #FFFFFF;
+  color: var(--charcoal-900);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-serif-luxury {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-script-luxury {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+}
+
+/* Button style from the reference */
+.btn-bronze {
+  background-color: var(--bronze-gold);
+  color: #FFFFFF;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-bronze:hover {
+  background-color: var(--bronze-gold-hover);
+}
+
+.btn-bronze-outline {
+  border: 1px solid var(--bronze-gold);
+  color: var(--bronze-gold);
+  background-color: transparent;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 0.7rem 1.4rem;
+  transition: all 0.25s ease;
+}
+
+.btn-bronze-outline:hover {
+  background-color: var(--bronze-gold);
+  color: #FFFFFF;
+}
+
+/* Arch Frame */
+.arch-frame {
+  border-radius: 999px 999px 0 0;
+  overflow: hidden;
+}
+
+/* Circular Seal */
+.seal-stamp {
+  border-radius: 50%;
+  border: 1px dashed var(--bronze-gold);
+}

@@ -1,0 +1,14 @@
+<svg width="240" height="28" viewBox="0 0 240 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <line x1="0" y1="14" x2="96" y2="14" stroke="#C99A3B" stroke-width="1" stroke-opacity="0.8" />
+  <circle cx="96" cy="14" r="1.5" fill="#C99A3B" />
+  <g transform="translate(120, 14)">
+    <path d="M0 -11 C2 -6 3 -2 0 4 C-3 -2 -2 -6 0 -11 Z" fill="#C99A3B" />
+    <path d="M0 4 C-4 1 -8 -4 -6 -8 C-3 -7 -1 -2 0 4 Z" fill="#C99A3B" opacity="0.9" />
+    <path d="M0 4 C4 1 8 -4 6 -8 C3 -7 1 -2 0 4 Z" fill="#C99A3B" opacity="0.9" />
+    <path d="M0 4 C-6 3 -12 -1 -11 -5 C-8 -4 -4 1 0 4 Z" fill="#E8C77A" opacity="0.75" />
+    <path d="M0 4 C6 3 12 -1 11 -5 C8 -4 4 1 0 4 Z" fill="#E8C77A" opacity="0.75" />
+    <circle cx="0" cy="5" r="1.5" fill="#8F6A1F" />
+  </g>
+  <circle cx="144" cy="14" r="1.5" fill="#C99A3B" />
+  <line x1="144" y1="14" x2="240" y2="14" stroke="#C99A3B" stroke-width="1" stroke-opacity="0.8" />
+</svg>
