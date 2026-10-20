@@ -15,7 +15,6 @@ import {
   Minus,
   Sparkles,
   ArrowRight,
-  Play,
   Menu,
 } from "lucide-react";
 import { AdminPanel } from "./components/AdminPanel";
@@ -561,84 +560,7 @@ const TESTIMONIALS = [
   },
 ];
 
-interface SocialItem {
-  id: string;
-  type: "reel" | "post";
-  category: "all" | "reels" | "bridal";
-  title: string;
-  caption: string;
-  url: string;
-  thumbnail: string;
-  views?: string;
-  tag: string;
-}
 
-const INSTAGRAM_COMMUNITY: SocialItem[] = [
-  {
-    id: "reel-1",
-    type: "reel",
-    category: "reels",
-    title: "Festive Bangles & Paithani Styling",
-    caption: "Traditional 24K gold polish bangles stack styled with classic silk saree in Chh. Sambhajinagar ✨",
-    url: "https://www.instagram.com/shambhavii_creations/reel/Dejo0mSt5hM/",
-    thumbnail: "/photos/hero_model_bangles.jpg",
-    views: "14.2K",
-    tag: "Trending Look",
-  },
-  {
-    id: "reel-2",
-    type: "reel",
-    category: "reels",
-    title: "South Peacock Temple Haar Reveal",
-    caption: "Intricately carved South Indian temple set with ruby cabochon drops ♡",
-    url: "https://www.instagram.com/shambhavii_creations/reel/Deeyg8MtgGe/",
-    thumbnail: "/photos/south_temple_peacock_haar.jpg",
-    views: "28.6K",
-    tag: "Temple Series",
-  },
-  {
-    id: "reel-3",
-    type: "reel",
-    category: "reels",
-    title: "Peshwai Ruby Cluster Kadas",
-    caption: "Handcrafted antique gold finish kadas pair with dome flower carvings 📦",
-    url: "https://www.instagram.com/shambhavii_creations/reel/DeBDWyCs74J/",
-    thumbnail: "/photos/peshwai_ruby_cluster_kadas.jpg",
-    views: "19.4K",
-    tag: "Bangles Click",
-  },
-  {
-    id: "post-1",
-    type: "post",
-    category: "bridal",
-    title: "Bespoke Bridal Nail Studio by Pallavi",
-    caption: "Professional French ombre nails with crystal embellishments 💅🏻",
-    url: "https://www.instagram.com/shambhavii_creations/p/Deq5bypjXvv/",
-    thumbnail: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600&auto=format&fit=crop&q=80",
-    tag: "Nail Studio",
-  },
-  {
-    id: "reel-4",
-    type: "reel",
-    category: "bridal",
-    title: "Festive Ready-Made Rangoli Setting",
-    caption: "Handcrafted reusable peacock motif rangoli for Diwali & weddings 🦚",
-    url: "https://www.instagram.com/shambhavii_creations/reel/Dd8i6TbtPUA/",
-    thumbnail: "/images/feature_gift.jpg",
-    views: "32.1K",
-    tag: "Ready Rangoli",
-  },
-  {
-    id: "post-2",
-    type: "post",
-    category: "all",
-    title: "Signature Floral Wati Mangalsutra",
-    caption: "Authentic double-chain wati mangalsutra with auspicious black beads ✨",
-    url: "https://www.instagram.com/shambhavii_creations/p/DelYRzFjerU/",
-    thumbnail: "/photos/photo_11.jpg",
-    tag: "Original Click",
-  },
-];
 
 export default function App() {
   const [currentView, setCurrentView] = useState<"storefront" | "admin">(() => {
@@ -688,7 +610,6 @@ export default function App() {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState<boolean>(true);
-  const [socialTab, setSocialTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -901,9 +822,6 @@ export default function App() {
             <a href="#reviews" className="hover:text-[#9E7D4B] transition-colors">
               Reviews
             </a>
-            <a href="#instagram" className="hover:text-[#9E7D4B] transition-colors">
-              Community
-            </a>
             <a
               href="https://wa.me/919156131162"
               target="_blank"
@@ -1047,15 +965,7 @@ export default function App() {
                 <span className="text-[0.68rem] font-sans text-[#9E7D4B] font-semibold">★ 4.9 Rating</span>
               </a>
 
-              {/* Community & Instagram Reels */}
-              <a
-                href="#instagram"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="py-3 text-sm font-serif-luxury text-[#1F1E1D] hover:text-[#9E7D4B] border-b border-[#FAF8F5] flex items-center justify-between transition-colors"
-              >
-                <span>Community & Studio Reels</span>
-                <span className="text-[0.68rem] font-sans text-[#E1306C] font-semibold">@shambhavii_creations</span>
-              </a>
+
 
               {/* WhatsApp direct CTA */}
               <div className="pt-3">
@@ -1485,151 +1395,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── 11. Instagram Community & Reels Showcase ──────────────────────── */}
-      <section id="instagram" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Header with verified handle and studio identity */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 text-left gap-6 border-b border-[#F0ECE6] pb-8">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FAF8F5] border border-[#EAE5DC] rounded-full mb-3">
-              <span className="w-2 h-2 rounded-full bg-[#E1306C]" />
-              <span className="text-[0.68rem] uppercase tracking-[0.24em] text-[#9E7D4B] font-semibold">
-                @SHAMBHAVII_CREATIONS
-              </span>
-            </div>
-            <h2 className="font-serif-luxury text-3xl sm:text-4xl text-[#1F1E1D] font-normal leading-tight">
-              From Our Studio to Your Feed
-            </h2>
-            <p className="text-xs sm:text-sm text-[#78746F] mt-2 max-w-xl leading-relaxed">
-              Wholesale imitation sets, new designs, bridal nails, and ready rangolis. Direct from Pallavi in Chh. Sambhajinagar.
-            </p>
-          </div>
 
-          {/* Social CTAs */}
-          <div className="flex flex-wrap items-center gap-3">
-            <a
-              href="https://www.instagram.com/shambhavii_creations/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white text-xs font-semibold rounded-[3px] shadow-sm hover:opacity-95 transition-opacity"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-              </svg>
-              <span>Follow @shambhavii_creations</span>
-            </a>
-            <a
-              href="https://chat.whatsapp.com/JfWXg1qccdpFrU5HYO0OtJ"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1FA855] hover:bg-[#1B944B] text-white text-xs font-semibold rounded-[3px] shadow-sm transition-colors"
-            >
-              <span>Join Reseller WhatsApp</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </div>
-
-        {/* Filter Tabs for Social Items */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 justify-start sm:justify-center scrollbar-none">
-          {[
-            { id: "all", label: "All Creations (6)" },
-            { id: "reels", label: "Trending Reels (4)" },
-            { id: "bridal", label: "Nails & Rangoli (2)" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setSocialTab(tab.id)}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border ${
-                socialTab === tab.id
-                  ? "bg-[#1F1E1D] text-white border-[#1F1E1D]"
-                  : "bg-white text-[#4A4744] border-[#EAE5DC] hover:border-[#9E7D4B] hover:text-[#9E7D4B]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* 6 Rich Instagram & Reels Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
-          {INSTAGRAM_COMMUNITY.filter((item) => {
-            if (socialTab === "all") return true;
-            return item.category === socialTab;
-          }).map((item) => (
-            <a
-              key={item.id}
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative flex flex-col bg-white border border-[#EAE5DC] rounded-[2px] overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300"
-            >
-              {/* Media Container with 4:5 Portrait Ratio */}
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#FAF8F5]">
-                <img
-                  src={resolveAsset(item.thumbnail)}
-                  alt={item.title}
-                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-
-                {/* Badge (Reel / Post tag) */}
-                <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-black/60 backdrop-blur-xs text-white text-[11px] font-medium px-2.5 py-1 rounded-[2px]">
-                  {item.type === "reel" ? (
-                    <>
-                      <Play className="w-3 h-3 fill-white" />
-                      <span>{item.tag}</span>
-                      {item.views && <span className="text-[#C8B89C]"> • {item.views}</span>}
-                    </>
-                  ) : (
-                    <>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                      </svg>
-                      <span>{item.tag}</span>
-                    </>
-                  )}
-                </div>
-
-                {/* Center Hover Action */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white p-4 text-center">
-                  <div className="w-12 h-12 rounded-full bg-white/90 text-[#1F1E1D] flex items-center justify-center mb-2 shadow-lg group-hover:scale-110 transition-transform">
-                    {item.type === "reel" ? (
-                      <Play className="w-5 h-5 fill-current ml-0.5" />
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                      </svg>
-                    )}
-                  </div>
-                  <span className="text-xs font-semibold tracking-wide">
-                    {item.type === "reel" ? "Watch Reel on Instagram" : "View on Instagram"} ↗
-                  </span>
-                </div>
-              </div>
-
-              {/* Title & Caption Info */}
-              <div className="p-4 space-y-1.5 flex-1 flex flex-col justify-between">
-                <div>
-                  <h4 className="font-serif-luxury text-base font-medium text-[#1F1E1D] group-hover:text-[#9E7D4B] transition-colors line-clamp-1">
-                    {item.title}
-                  </h4>
-                  <p className="text-xs text-[#78746F] line-clamp-2 leading-relaxed mt-1">
-                    {item.caption}
-                  </p>
-                </div>
-                <div className="pt-3 border-t border-[#F0ECE6] flex items-center justify-between text-[0.7rem] text-[#9E7D4B] font-medium">
-                  <span>@shambhavii_creations</span>
-                  <span className="group-hover:translate-x-1 transition-transform">Open in App →</span>
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
-      </section>
 
       {/* ── 12. Newsletter / Exclusive Offers Banner ───────────────────────── */}
       <section className="bg-[#FAF8F5] border-y border-[#F0ECE6] py-14">
@@ -1684,13 +1450,6 @@ export default function App() {
               </p>
               {/* Social icons */}
               <div className="flex items-center gap-4 text-[#1F1E1D] pt-2">
-                <a href="https://www.instagram.com/shambhavii_creations/" target="_blank" rel="noopener noreferrer" className="hover:text-[#9E7D4B] transition-colors" aria-label="Instagram">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-                  </svg>
-                </a>
                 <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#9E7D4B] transition-colors" aria-label="Facebook">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
