@@ -29,10 +29,10 @@ interface CartItem {
 
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   storeName: "Shambhavi Creation",
-  tagline: "Fine Jewellery & Bridal Atelier",
+  tagline: "Fine Jewellery",
   city: "",
   phone: "919156131162",
-  ownerName: "Pallavi / Shambhavi",
+  ownerName: "Pallavi",
   instagramUrl: "https://www.instagram.com/shambhavii_creations/",
   announcementText: "✨ FESTIVE WEDDING ATELIER — COMPLIMENTARY VELVET BOX PACKAGING ON ALL ORDERS ✨",
 };
@@ -394,14 +394,14 @@ export default function App() {
       const saved = localStorage.getItem("shambhavi_store_settings_v1");
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.tagline && (parsed.tagline.includes("Sambhajinagar") || parsed.tagline.includes("CSN"))) {
-          parsed.tagline = "Fine Jewellery & Bridal Atelier";
+        if (parsed.tagline && (parsed.tagline.includes("Sambhajinagar") || parsed.tagline.includes("CSN") || parsed.tagline.includes("Bridal Atelier"))) {
+          parsed.tagline = "Fine Jewellery";
         }
         if (parsed.city && (parsed.city.includes("Sambhajinagar") || parsed.city.includes("CSN"))) {
           parsed.city = "";
         }
-        if (parsed.ownerName === "Pallavi") {
-          parsed.ownerName = "Pallavi / Shambhavi";
+        if (parsed.ownerName && (parsed.ownerName.includes("Shambhavi") || parsed.ownerName === "Pallavi / Shambhavi")) {
+          parsed.ownerName = "Pallavi";
         }
         return parsed;
       }
@@ -897,7 +897,7 @@ export default function App() {
                   className="w-full py-2.5 bg-[#1FA855] hover:bg-[#1B944B] text-white rounded-[2px] text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-colors"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  <span>Chat with {storeSettings.ownerName || "Pallavi / Shambhavi"}</span>
+                  <span>Chat with {storeSettings.ownerName || "Pallavi"}</span>
                 </a>
               </div>
             </nav>

@@ -43,6 +43,10 @@ export interface StoreSettings {
   ownerName: string;
   instagramUrl: string;
   announcementText: string;
+  heroHeadlineMain?: string;
+  heroHeadlineItalic?: string;
+  heroDescription?: string;
+  shippingNotice?: string;
 }
 
 export interface CategoryItem {
@@ -107,8 +111,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (clean.city && (clean.city.includes("Sambhajinagar") || clean.city.includes("CSN"))) {
       clean.city = "";
     }
-    if (clean.tagline && (clean.tagline.includes("Sambhajinagar") || clean.tagline.includes("CSN"))) {
-      clean.tagline = "Fine Jewellery & Bridal Atelier";
+    if (clean.tagline && (clean.tagline.includes("Sambhajinagar") || clean.tagline.includes("CSN") || clean.tagline.includes("Bridal Atelier"))) {
+      clean.tagline = "Fine Jewellery";
+    }
+    if (clean.ownerName && (clean.ownerName.includes("Shambhavi") || clean.ownerName === "Pallavi / Shambhavi")) {
+      clean.ownerName = "Pallavi";
     }
     return clean;
   });
@@ -833,7 +840,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     className="w-full bg-[#FAF8F5] border border-[#EAE5DC] px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-[#9E7D4B]"
                   />
                   <span className="text-[0.68rem] text-[#78746F] mt-1 block">
-                    Customer chat button displays: &quot;Chat with {localSettings.ownerName || "Pallavi / Shambhavi"}&quot;
+                    Customer chat button displays: &quot;Chat with {localSettings.ownerName || "Pallavi"}&quot;
                   </span>
                 </div>
               </div>
