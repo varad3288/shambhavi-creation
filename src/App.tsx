@@ -934,7 +934,7 @@ export default function App() {
             {/* Left Copy Column */}
             <div className="lg:col-span-6 space-y-6 text-left">
               <h1 className="font-serif-luxury text-4xl sm:text-5xl lg:text-6xl text-[#1F1E1D] font-normal leading-[1.12]">
-                Jewelry That <br />
+                Jewellery That <br />
                 <span className="italic font-normal">Tells Your Story</span>
               </h1>
 
@@ -977,7 +977,7 @@ export default function App() {
 
                 <div className="absolute bottom-6 right-6 text-right pointer-events-none drop-shadow-md">
                   <span className="font-serif-luxury italic text-xl sm:text-2xl text-white block leading-tight font-light">
-                    More Than Jewelry,
+                    More Than Jewellery,
                   </span>
                   <span className="font-serif-luxury italic text-2xl sm:text-3xl text-white font-normal">
                     A Feeling ♡
