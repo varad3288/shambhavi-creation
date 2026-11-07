@@ -3,9 +3,7 @@ import {
   Search,
   Heart,
   ShoppingBag,
-  Star,
   ChevronRight,
-  ChevronLeft,
   ChevronDown,
   CheckCircle2,
   Share2,
@@ -533,35 +531,6 @@ const CATALOG_PRODUCTS: Product[] = [
   },
 ];
 
-const TESTIMONIALS = [
-  {
-    id: "t1",
-    name: "Priya Somani",
-    city: "Chh. Sambhajinagar",
-    role: "Verified Customer",
-    quote: "“The Jaipur Polki choker arrived beautifully packed with a personal card. The gold finish looks just like real gold!”",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "t2",
-    name: "Ayesha Kothari",
-    city: "Mumbai",
-    role: "Regular Customer",
-    quote: "“I’ve ordered multiple times from Shambhavi. The finish is lovely and ordering directly on WhatsApp is so easy.”",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "t3",
-    name: "Rohan & Sneha",
-    city: "Bengaluru",
-    role: "Anniversary Gift",
-    quote: "“Ordered the Solitaire ring and tennis necklace. Beautifully packed, quickly delivered, and arrived right on our anniversary!”",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
-  },
-];
-
-
-
 export default function App() {
   const [currentView, setCurrentView] = useState<"storefront" | "admin">(() => {
     return window.location.hash === "#admin" ? "admin" : "storefront";
@@ -819,9 +788,6 @@ export default function App() {
               )}
             </div>
 
-            <a href="#reviews" className="hover:text-[#9E7D4B] transition-colors">
-              Reviews
-            </a>
             <a
               href="https://wa.me/919156131162"
               target="_blank"
@@ -955,18 +921,6 @@ export default function App() {
                 )}
               </div>
 
-              {/* Reviews */}
-              <a
-                href="#reviews"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="py-3 text-sm font-serif-luxury text-[#1F1E1D] hover:text-[#9E7D4B] border-b border-[#FAF8F5] flex items-center justify-between transition-colors"
-              >
-                <span>Customer Reviews</span>
-                <span className="text-[0.68rem] font-sans text-[#9E7D4B] font-semibold">★ 4.9 Rating</span>
-              </a>
-
-
-
               {/* WhatsApp direct CTA */}
               <div className="pt-3">
                 <a
@@ -1038,12 +992,6 @@ export default function App() {
                 <a href="#catalog" className="btn-bronze shadow-sm">
                   <span>EXPLORE CATALOG</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </a>
-                <a
-                  href="#reviews"
-                  className="btn-bronze-outline"
-                >
-                  CUSTOMER REVIEWS
                 </a>
               </div>
             </div>
@@ -1335,68 +1283,6 @@ export default function App() {
       </section>
 
 
-      {/* ── 10. Customer Testimonials ("Loved by Thousands") ────────────────── */}
-      <section id="reviews" className="py-16 bg-[#FAF8F5] border-t border-[#F0ECE6]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-10 text-left">
-            <div>
-              <span className="text-[0.68rem] uppercase tracking-[0.24em] text-[#9E7D4B] font-semibold block mb-1">
-                WHAT OUR PATRONS SAY
-              </span>
-              <h2 className="font-serif-luxury text-3xl sm:text-4xl text-[#1F1E1D] font-normal">
-                Loved by Thousands
-              </h2>
-            </div>
-            {/* Arrows */}
-            <div className="flex items-center gap-2">
-              <button className="p-2 rounded-full border border-[#EAE5DC] bg-white hover:bg-[#FAF8F5] text-[#1F1E1D] shadow-2xs">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button className="p-2 rounded-full border border-[#EAE5DC] bg-white hover:bg-[#FAF8F5] text-[#1F1E1D] shadow-2xs">
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* 3 Review Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <div
-                key={t.id}
-                className="bg-white rounded-[2px] border border-[#F0ECE6] p-6 text-left flex flex-col justify-between shadow-2xs hover:shadow-md transition-shadow"
-              >
-                <div className="space-y-4">
-                  <div className="flex text-[#9E7D4B]">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-[#9E7D4B]" />
-                    ))}
-                  </div>
-                  <p className="font-serif-luxury italic text-sm text-[#4A4744] leading-relaxed">
-                    {t.quote}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3 pt-6 mt-6 border-t border-[#F0ECE6]">
-                  <img
-                    src={resolveAsset(t.avatar)}
-                    alt={t.name}
-                    className="w-10 h-10 rounded-full object-cover border border-[#EAE5DC]"
-                  />
-                  <div>
-                    <h5 className="text-xs font-semibold text-[#1F1E1D]">{t.name}</h5>
-                    <span className="text-[0.68rem] text-[#9E7D4B] font-medium">
-                      {t.role} • {t.city}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-
-
       {/* ── 12. Newsletter / Exclusive Offers Banner ───────────────────────── */}
       <section className="bg-[#FAF8F5] border-y border-[#F0ECE6] py-14">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-5">
@@ -1484,7 +1370,6 @@ export default function App() {
             <div className="space-y-3">
               <h4 className="text-xs font-semibold text-[#1F1E1D] uppercase tracking-wider">About</h4>
               <ul className="space-y-2 text-xs text-[#78746F]">
-                <li><a href="#reviews" className="hover:text-[#1F1E1D]">Customer Reviews</a></li>
                 <li><a href="#catalog" className="hover:text-[#1F1E1D]">Jaipur & Chh. Sambhajinagar Craft</a></li>
                 <li><a href="https://wa.me/919156131162" className="hover:text-[#1F1E1D]">Quality Guarantee</a></li>
                 <li><a href="https://wa.me/919156131162" className="hover:text-[#1F1E1D]">Design Consultation</a></li>
@@ -1562,17 +1447,6 @@ export default function App() {
                   <h3 className="font-serif-luxury text-2xl text-[#1F1E1D] font-normal leading-tight">
                     {quickViewProduct.name}
                   </h3>
-
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="flex text-[#9E7D4B]">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-[#9E7D4B]" />
-                      ))}
-                    </div>
-                    <span className="text-xs text-[#78746F]">
-                      {quickViewProduct.rating} ({quickViewProduct.reviewsCount} verified reviews)
-                    </span>
-                  </div>
 
                   <div className="flex items-baseline gap-3 my-3">
                     <span className="text-2xl font-semibold text-[#1F1E1D]">
