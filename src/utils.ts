@@ -8,3 +8,11 @@ export const resolveAsset = (path?: string): string => {
   const cleanBase = base.endsWith("/") ? base : base + "/";
   return cleanBase + cleanPath;
 };
+
+export const formatWhatsAppLink = (phone: string, text?: string): string => {
+  const cleanPhone = phone.replace(/\D/g, "");
+  const base = `https://wa.me/${cleanPhone}`;
+  if (!text) return base;
+  return `${base}?text=${encodeURIComponent(text)}`;
+};
+

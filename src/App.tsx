@@ -3,7 +3,6 @@ import {
   Search,
   Heart,
   ShoppingBag,
-  ChevronRight,
   ChevronDown,
   CheckCircle2,
   Share2,
@@ -15,43 +14,37 @@ import {
   ArrowRight,
   Menu,
 } from "lucide-react";
-import { AdminPanel } from "./components/AdminPanel";
-import { resolveAsset } from "./utils";
-
-interface Product {
-  id: string;
-  name: string;
-  category: "all" | "under-1000" | "festive" | "polki" | "earrings" | "necklaces" | "rings" | "bangles";
-  categoryLabel: string;
-  price: number;
-  originalPrice: number;
-  rating: number;
-  reviewsCount: number;
-  image: string;
-  badge?: {
-    text: string;
-    variant: "new" | "few-left" | "bestseller";
-  };
-  plating: string;
-  stones: string;
-  description: string;
-  shippingStatus: string;
-}
+import {
+  AdminPanel,
+  type Product,
+  type StoreSettings,
+  type CategoryItem,
+} from "./components/AdminPanel";
+import { resolveAsset, formatWhatsAppLink } from "./utils";
 
 interface CartItem {
   product: Product;
   quantity: number;
 }
 
-const CATEGORY_TABS = [
-  { id: "all", label: "All Pieces" },
-  { id: "necklaces", label: "Mangalsutra & Sets" },
-  { id: "under-1000", label: "Under ₹1,000" },
-  { id: "festive", label: "Festive Ready" },
-  { id: "polki", label: "Kundan & Polki" },
-  { id: "earrings", label: "Earrings" },
-  { id: "rings", label: "Rings" },
-  { id: "bangles", label: "Bangles & Kadas" },
+export const DEFAULT_STORE_SETTINGS: StoreSettings = {
+  storeName: "Shambhavi Creation",
+  tagline: "Fine Jewellery • Chh. Sambhajinagar",
+  city: "Chh. Sambhajinagar, Maharashtra",
+  phone: "919156131162",
+  ownerName: "Pallavi",
+  instagramUrl: "https://www.instagram.com/shambhavii_creations/",
+  announcementText: "✨ FESTIVE WEDDING ATELIER — COMPLIMENTARY VELVET BOX PACKAGING ON ALL ORDERS ✨",
+};
+
+export const DEFAULT_CATEGORIES: CategoryItem[] = [
+  { id: "all", label: "All Pieces", image: "/photos/shambhavi_signature_wati_haar.jpg", subtitle: "Complete Collection" },
+  { id: "necklaces", label: "Mangalsutra & Sets", image: "/photos/shambhavi_signature_wati_haar.jpg", subtitle: "Signature Wati & Haars" },
+  { id: "bangles", label: "Bangles & Kadas", image: "/photos/hero_model_bangles.jpg", subtitle: "Patli, Tode & Kadas" },
+  { id: "festive", label: "Festive Ready", image: "/photos/south_temple_peacock_haar.jpg", subtitle: "Temple & Kundan Sets" },
+  { id: "earrings", label: "Earrings & Jhumkas", image: "/images/gulabi_jhumkas.png", subtitle: "Meenakari & Drops" },
+  { id: "rings", label: "Rings & Solitaires", image: "/images/feature_rings.jpg", subtitle: "Statement Rings" },
+  { id: "under-1000", label: "Under ₹1,000", image: "/images/feature_gift.jpg", subtitle: "Affordable Luxury Gifts" },
 ];
 
 const CIRCULAR_STORIES = [
@@ -64,12 +57,13 @@ const CIRCULAR_STORIES = [
   { name: "Emerald Kadas", image: "/photos/russian_emerald_royal_bangles.jpg", tab: "bangles" },
 ];
 
-const CATALOG_PRODUCTS: Product[] = [
+// Curated authentic catalog pieces
+const CURATED_PRODUCTS: Product[] = [
   {
     id: "p-photo-9",
     name: "Shambhavi Signature 3-Line Wati Mangalsutra",
     category: "necklaces",
-    categoryLabel: "Mangalsutra",
+    categoryLabel: "Mangalsutra & Sets",
     price: 1599,
     originalPrice: 2299,
     rating: 5.0,
@@ -133,16 +127,16 @@ const CATALOG_PRODUCTS: Product[] = [
     id: "p-photo-11",
     name: "Double-Chain Floral Wati Mangalsutra",
     category: "necklaces",
-    categoryLabel: "Mangalsutra",
+    categoryLabel: "Mangalsutra & Sets",
     price: 1399,
     originalPrice: 1899,
-    rating: 4.9,
+    rating: 4.8,
     reviewsCount: 126,
     image: "/photos/photo_11.jpg",
     badge: { text: "Original Click", variant: "new" },
     plating: "Gold Plated Finish",
-    stones: "Floral Sunburst Wati with Dual Gold & Black Bead Chains",
-    description: "Double-chain traditional Wati Mangalsutra featuring delicately carved floral sunburst wati pendants and auspicious black beads.",
+    stones: "Micro Pave Floral Cap with Auspicious Black Beads",
+    description: "Dual-chain wati mangalsutra featuring delicate micro-etched floral cup details and auspicious high-luster black beads.",
     shippingStatus: "Ready to Ship",
   },
   {
@@ -150,15 +144,15 @@ const CATALOG_PRODUCTS: Product[] = [
     name: "Peshwai Ruby Cluster Antique Kadas (Pair)",
     category: "bangles",
     categoryLabel: "Bangles & Kadas",
-    price: 1549,
-    originalPrice: 2199,
-    rating: 5.0,
+    price: 1450,
+    originalPrice: 1999,
+    rating: 4.9,
     reviewsCount: 94,
     image: "/photos/peshwai_ruby_cluster_kadas.jpg",
-    badge: { text: "Original Click", variant: "bestseller" },
-    plating: "Antique Gold Finish",
-    stones: "Raised Ruby & Emerald Floral Domes with Intricate Beading",
-    description: "Classic Peshwai dome-carved kadas pair with deep ruby stones and side opening hinge for an effortless fit.",
+    badge: { text: "Original Click", variant: "few-left" },
+    plating: "Antique Matte Finish",
+    stones: "Carved Floral Ruby Dome Cabochons",
+    description: "Traditional Peshwai antique finish kadas adorned with raised ruby flower clusters. Styled traditionally with Paithani sarees.",
     shippingStatus: "Ready to Ship",
   },
   {
@@ -166,15 +160,15 @@ const CATALOG_PRODUCTS: Product[] = [
     name: "Royal Russian Emerald & Ruby Bridal Bangles",
     category: "bangles",
     categoryLabel: "Bangles & Kadas",
-    price: 1499,
-    originalPrice: 1999,
-    rating: 4.9,
+    price: 1599,
+    originalPrice: 2199,
+    rating: 5.0,
     reviewsCount: 88,
     image: "/photos/russian_emerald_royal_bangles.jpg",
-    badge: { text: "Original Click", variant: "new" },
-    plating: "Antique Gold Finish",
-    stones: "Mint Green Russian Emeralds with Pearl Bead Framing",
-    description: "Statement openable bridal bangles pair featuring square mint emerald stones, ruby florets, and micro-pearl borders.",
+    badge: { text: "Original Click", variant: "bestseller" },
+    plating: "Antique Brass Polish",
+    stones: "Baguette Cut Russian Emeralds & Rubies",
+    description: "Regal openable bridal kadas accented with faceted faux Russian emeralds and ruby gemstones for an opulent wedding look.",
     shippingStatus: "Ready to Ship",
   },
   {
@@ -182,47 +176,47 @@ const CATALOG_PRODUCTS: Product[] = [
     name: "Temple Medallion Haar & Studs Set",
     category: "festive",
     categoryLabel: "Festive Ready",
-    price: 1999,
-    originalPrice: 2699,
+    price: 1899,
+    originalPrice: 2499,
     rating: 4.9,
     reviewsCount: 76,
     image: "/photos/temple_floral_medallion_necklace.jpg",
     badge: { text: "Original Click", variant: "few-left" },
-    plating: "Antique Matte Gold",
-    stones: "Carved Medallion with Ruby Center & Matching Tops",
-    description: "Royal temple haar designed with layered leaf motifs, ruby gemstones, and matching temple tops. Perfect for silk sarees.",
+    plating: "Temple Matte Finish",
+    stones: "Goddess Lakshmi Floral Repoussé & Coin Drops",
+    description: "Intricately embossed temple deity medallion necklace with auspicious floral filigree and matching earrings.",
     shippingStatus: "Ready to Ship",
   },
   {
     id: "p-photo-10",
     name: "Shambhavi Diamond Floral Wati Set with Bangles",
     category: "necklaces",
-    categoryLabel: "Mangalsutra",
-    price: 1449,
-    originalPrice: 1999,
-    rating: 5.0,
+    categoryLabel: "Mangalsutra & Sets",
+    price: 1699,
+    originalPrice: 2399,
+    rating: 4.9,
     reviewsCount: 112,
     image: "/photos/shambhavi_diamond_wati_set.jpg",
     badge: { text: "Original Click", variant: "bestseller" },
-    plating: "Gold Plated Finish",
-    stones: "Diamond Floret Wati, Black Bead Chain & Pair of Gold Bangles",
-    description: "Festive set including an American diamond floret wati mangalsutra and a pair of textured gold bangles in a luxury presentation box.",
+    plating: "Dual Tone Gold Finish",
+    stones: "American Diamond Floret Cluster in Traditional Wati",
+    description: "Modern twist on traditional wati mangalsutra with sparkling cubic zirconia floral florets and matching gold bangles.",
     shippingStatus: "Ready to Ship",
   },
   {
     id: "p-photo-18",
     name: "Long Traditional Wati Mangalsutra & Model Set",
     category: "necklaces",
-    categoryLabel: "Mangalsutra",
-    price: 1499,
-    originalPrice: 2100,
+    categoryLabel: "Mangalsutra & Sets",
+    price: 1899,
+    originalPrice: 2599,
     rating: 5.0,
     reviewsCount: 138,
     image: "/photos/photo_18.jpg",
     badge: { text: "Original Click", variant: "bestseller" },
-    plating: "Gold Plated Finish",
-    stones: "Long 2-Line Wati Mangalsutra with Fluted Gold Beads",
-    description: "Graceful long-line traditional Wati Mangalsutra as seen on our model. Auspicious and timeless piece for everyday elegance.",
+    plating: "Pure 24K Micro Gold Plated",
+    stones: "Traditional Maharashtrian Heavy Watis",
+    description: "Grand 28-inch long traditional mangalsutra with dual hollow-carved wati medallions. A prized wedding heirloom piece.",
     shippingStatus: "Ready to Ship",
   },
   {
@@ -230,31 +224,31 @@ const CATALOG_PRODUCTS: Product[] = [
     name: "Ruby Halo Floral Wati Mangalsutra & Bangles Set",
     category: "festive",
     categoryLabel: "Festive Ready",
-    price: 1399,
-    originalPrice: 1899,
+    price: 1799,
+    originalPrice: 2450,
     rating: 4.9,
     reviewsCount: 96,
     image: "/photos/photo_17.jpg",
     badge: { text: "Original Click", variant: "new" },
-    plating: "Gold Plated Finish",
-    stones: "Ruby Halo Watis, Black Bead Strand & Pair of Bangles",
-    description: "Vibrant ruby stone centered in sparkling crystal halos with matching gold-finish bangles on pure silk styling.",
+    plating: "Yellow Gold Polish",
+    stones: "Ruby Halo Beads with Traditional Wati Cups",
+    description: "Festive ensemble pairing a ruby-accented wati mangalsutra with coordinating bridal bangles.",
     shippingStatus: "Ready to Ship",
   },
   {
     id: "p-photo-15",
     name: "Shambhavi 4-Line Kolhapuri Wati Haar",
     category: "necklaces",
-    categoryLabel: "Mangalsutra",
-    price: 1649,
-    originalPrice: 2299,
+    categoryLabel: "Mangalsutra & Sets",
+    price: 1999,
+    originalPrice: 2699,
     rating: 5.0,
     reviewsCount: 84,
     image: "/photos/photo_15.jpg",
     badge: { text: "Original Click", variant: "few-left" },
-    plating: "Gold Plated Finish",
-    stones: "4-Line Black & Gold Beads with Ruby Seed Droplets",
-    description: "Grand 4-line Kolhapuri style wati haar with hanging ruby seed beads and floral repoussé work. Distinctive traditional look.",
+    plating: "Antique Gold Polish",
+    stones: "4-Line Black Bead Weave with Heavy Watis",
+    description: "Authentic Kolhapuri style 4-line mangalsutra with dense black bead weaving and hand-engraved gold beads.",
     shippingStatus: "Ready to Ship",
   },
   {
@@ -262,15 +256,15 @@ const CATALOG_PRODUCTS: Product[] = [
     name: "Classic Gold Wati Necklace & Bangles Duo",
     category: "under-1000",
     categoryLabel: "Under ₹1,000",
-    price: 999,
-    originalPrice: 1499,
+    price: 899,
+    originalPrice: 1299,
     rating: 4.8,
     reviewsCount: 162,
     image: "/photos/photo_12.jpg",
-    badge: { text: "Under ₹1,000", variant: "bestseller" },
-    plating: "Gold Plated Finish",
-    stones: "Carved Golden Wati with Matching Textured Bangles",
-    description: "All-gold traditional look with fluted golden wati pendants and a pair of textured daily-wear bangles under ₹1,000.",
+    badge: { text: "Under ₹1K", variant: "bestseller" },
+    plating: "High Polish Gold Plated",
+    stones: "Dual Wati Beads & Gold Kada Duo",
+    description: "Chic everyday wati mangalsutra and matching gold kada duo set. Premium look at an accessible price point.",
     shippingStatus: "Ready to Ship",
   },
   {
@@ -280,29 +274,29 @@ const CATALOG_PRODUCTS: Product[] = [
     categoryLabel: "Under ₹1,000",
     price: 949,
     originalPrice: 1399,
-    rating: 4.9,
+    rating: 4.8,
     reviewsCount: 108,
     image: "/photos/photo_19.jpg",
-    badge: { text: "Under ₹1,000", variant: "new" },
+    badge: { text: "Under ₹1K", variant: "new" },
     plating: "Gold Plated Finish",
-    stones: "Rhombus Ruby & Zirconia Wati with Pair of Bangles",
-    description: "Modern geometric rhombus pendant set with ruby center stone, accompanied by two smooth gold bangles.",
+    stones: "Square Ruby Centrepiece with AD stones",
+    description: "Contemporary square-cut ruby pendant set on traditional black bead chain with matching sleek bangles.",
     shippingStatus: "Ready to Ship",
   },
   {
     id: "p-photo-13",
     name: "Emerald Cut Solitaire Mangalsutra Set",
     category: "necklaces",
-    categoryLabel: "Mangalsutra",
-    price: 1199,
-    originalPrice: 1699,
+    categoryLabel: "Mangalsutra & Sets",
+    price: 1149,
+    originalPrice: 1599,
     rating: 4.9,
     reviewsCount: 92,
     image: "/photos/photo_13.jpg",
     badge: { text: "Original Click", variant: "new" },
-    plating: "Gold Plated Finish",
-    stones: "Emerald-Cut Center Diamond & Diamond Halo with Bangles",
-    description: "Regal emerald-cut centerpiece framed in sparkling halo crystals, complete with two gold bangles.",
+    plating: "Dual Tone Micro Polish",
+    stones: "Emerald Cut Austrian Crystal with Black Bead Chain",
+    description: "Refined modern mangalsutra showcasing an emerald-cut crystal solitaire framed in delicate yellow gold prongs.",
     shippingStatus: "Ready to Ship",
   },
   {
@@ -310,222 +304,78 @@ const CATALOG_PRODUCTS: Product[] = [
     name: "Carved Royal Openable Bridal Bangles (Pair)",
     category: "bangles",
     categoryLabel: "Bangles & Kadas",
-    price: 1449,
-    originalPrice: 1999,
-    rating: 4.9,
+    price: 1399,
+    originalPrice: 1899,
+    rating: 4.8,
     reviewsCount: 78,
     image: "/photos/photo_2.jpg",
-    badge: { text: "Original Click", variant: "bestseller" },
-    plating: "24K Gold Polish Finish",
-    stones: "Intricate Filigree & Ruby Floral Accents",
-    description: "Exquisite filigree openable bangles pair with ruby stone center florets and side clip hinge.",
-    shippingStatus: "Ready to Ship",
-  },
-  {
-    id: "p-flagship-1",
-    name: "Round Solitaire Floral Mangalsutra Combo",
-    category: "necklaces",
-    categoryLabel: "Mangalsutra",
-    price: 1499,
-    originalPrice: 2199,
-    rating: 5.0,
-    reviewsCount: 168,
-    image: "/products/solitaire_mangalsutra_combo.jpg",
-    badge: { text: "Original Click", variant: "bestseller" },
-    plating: "Gold Plated Finish",
-    stones: "American Diamond Pendant with Black Beads & Dual Bangles",
-    description: "Complete festive combo set: fine gold-finish mangalsutra necklace, matching ear climber studs, and a pair of classic smooth bangles.",
-    shippingStatus: "Ready to Ship",
-  },
-  {
-    id: "p-flagship-2",
-    name: "Butterfly Diamond Motif Mangalsutra Set",
-    category: "necklaces",
-    categoryLabel: "Mangalsutra",
-    price: 1199,
-    originalPrice: 1699,
-    rating: 4.9,
-    reviewsCount: 114,
-    image: "/products/butterfly_motif_set.jpg",
     badge: { text: "Original Click", variant: "new" },
-    plating: "Gold Plated Finish",
-    stones: "Crystal Butterfly Motif with Matching Studs & Bangles",
-    description: "Charming butterfly centerpiece adorned with micro-stones, accompanied by matching butterfly stud earrings and gold bangles.",
-    shippingStatus: "Ready to Ship",
-  },
-  {
-    id: "p-flagship-3",
-    name: "Teardrop Floral Pendant Mangalsutra Set",
-    category: "festive",
-    categoryLabel: "Festive Ready",
-    price: 1349,
-    originalPrice: 1950,
-    rating: 5.0,
-    reviewsCount: 92,
-    image: "/products/teardrop_floral_set.jpg",
-    badge: { text: "Original Click", variant: "few-left" },
-    plating: "Gold Plated Finish",
-    stones: "Teardrop Crystal Drop with Mini Hoops & Bangles",
-    description: "Graceful teardrop pendant with floral crown detailing, complete with pavé hoop earrings and gold bangles.",
-    shippingStatus: "Ready to Ship",
-  },
-  {
-    id: "p-flagship-4",
-    name: "Sunbeam Crescent Moon Mangalsutra Set",
-    category: "under-1000",
-    categoryLabel: "Under ₹1,000",
-    price: 999,
-    originalPrice: 1450,
-    rating: 4.8,
-    reviewsCount: 88,
-    image: "/products/crescent_moon_set.jpg",
-    badge: { text: "Under ₹1,000", variant: "bestseller" },
-    plating: "Gold Plated Finish",
-    stones: "Radiant Crescent Motif with Bow Pearl Studs & Bangles",
-    description: "Auspicious sun-crescent pendant paired with sweet pearl bow earrings and classic gold bangles.",
-    shippingStatus: "Ready to Ship",
-  },
-  {
-    id: "p-flagship-5",
-    name: "Tri-Leaf Arch Diamond Mangalsutra Set",
-    category: "necklaces",
-    categoryLabel: "Mangalsutra",
-    price: 1299,
-    originalPrice: 1899,
-    rating: 4.9,
-    reviewsCount: 104,
-    image: "/products/tri_leaf_mangalsutra_set.jpg",
-    badge: { text: "Original Click", variant: "new" },
-    plating: "Gold Plated Finish",
-    stones: "Pavé Zirconia Tri-Leaf Pendant & Drop Earrings",
-    description: "Modern tri-leaf arch pendant strung on delicate black and gold beads, paired with geometric statement drop earrings.",
-    shippingStatus: "Ready to Ship",
-  },
-  {
-    id: "p-flagship-6",
-    name: "Royal Solitaire Halo Mangalsutra Set",
-    category: "necklaces",
-    categoryLabel: "Mangalsutra",
-    price: 1249,
-    originalPrice: 1799,
-    rating: 4.9,
-    reviewsCount: 76,
-    image: "/products/cushion_halo_set.jpg",
-    badge: { text: "Original Click", variant: "new" },
-    plating: "Gold Plated Finish",
-    stones: "Brilliant Solitaire Halo & Cushion Studs with Bangles",
-    description: "Timeless solitaire framed by a delicate halo ring, with matching cushion-cut stud earrings and sleek gold bangles.",
-    shippingStatus: "Ready to Ship",
-  },
-  {
-    id: "p-flagship-7",
-    name: "Crown Heart Chevron Mangalsutra Set",
-    category: "festive",
-    categoryLabel: "Festive Ready",
-    price: 1399,
-    originalPrice: 1999,
-    rating: 5.0,
-    reviewsCount: 82,
-    image: "/products/chevron_heart_set.jpg",
-    badge: { text: "Original Click", variant: "few-left" },
-    plating: "Gold Plated Finish",
-    stones: "Chevron Heart Pendant & Triangular Pearl Studs with Bangles",
-    description: "Delicate chevron curve holding a radiant heart floral crest, complemented by pearl stud earrings and bangles.",
-    shippingStatus: "Ready to Ship",
-  },
-  {
-    id: "p-flagship-8",
-    name: "Minimalist Halo Solitaire Mangalsutra Set",
-    category: "under-1000",
-    categoryLabel: "Under ₹1,000",
-    price: 899,
-    originalPrice: 1299,
-    rating: 4.8,
-    reviewsCount: 96,
-    image: "/products/halo_solitaire_set.jpg",
-    badge: { text: "Under ₹1,000", variant: "bestseller" },
-    plating: "Gold Plated Finish",
-    stones: "Round Halo Solitaire & Floral Studs",
-    description: "Clean modern design ideal for daily workwear and festive occasions. Comes in a luxury keepsake box.",
+    plating: "Antique 24K Matte Polish",
+    stones: "Hand Carved Floral Filigree with Screw Pin",
+    description: "Handcrafted bridal kadas featuring openable screw lock and regal antique gold filigree.",
     shippingStatus: "Ready to Ship",
   },
   {
     id: "p-gulabi",
     name: "Gulabi Meenakari Jhumkas",
     category: "earrings",
-    categoryLabel: "Earrings",
-    price: 849,
-    originalPrice: 1299,
+    categoryLabel: "Earrings & Jhumkas",
+    price: 749,
+    originalPrice: 1099,
     rating: 4.9,
     reviewsCount: 142,
     image: "/images/gulabi_jhumkas.png",
-    badge: { text: "New", variant: "new" },
-    plating: "Antique Gold Finish",
-    stones: "Hand-painted pink enamel & pearl clusters",
-    description: "Traditional dome-shaped jhumkas with delicate pink enamel work, floral carving, and pearl drops. 5.5 cm length.",
+    badge: { text: "Under ₹1K", variant: "bestseller" },
+    plating: "24K Gold Micro-Plated",
+    stones: "Hand-painted Pink Meenakari, Seed Pearls",
+    description: "Vibrant Jaipur gulabi pink meenakari dome jhumkas with hanging seed pearl tassels.",
     shippingStatus: "Ready to Ship",
   },
   {
-    id: "p1",
-    name: "Jaipur Antique Kundan & Pearl Choker Set",
-    category: "polki",
-    categoryLabel: "Kundan & Polki",
-    price: 2499,
-    originalPrice: 3499,
-    rating: 4.9,
-    reviewsCount: 142,
-    image: "/photos/south_temple_peacock_haar.jpg",
-    badge: { text: "New Arrival", variant: "new" },
-    plating: "Antique Gold Finish",
-    stones: "Polki glass stones & pearl drops",
-    description: "Traditional kundan choker set with matching earrings and adjustable thread string.",
-    shippingStatus: "Ready to Ship",
-  },
-  {
-    id: "p2",
-    name: "Royal Peacock Chaandbalis",
-    category: "earrings",
-    categoryLabel: "Earrings",
-    price: 999,
-    originalPrice: 1350,
-    rating: 5.0,
-    reviewsCount: 96,
-    image: "/photos/photo_6.jpg",
-    badge: { text: "Bestseller", variant: "bestseller" },
-    plating: "Gold Plated Finish",
-    stones: "Ruby red enamel & polki stones",
-    description: "Lightweight and comfortable chaandbali earrings inspired by royal Rajasthani designs. Perfect for festivals.",
-    shippingStatus: "Ready to Ship",
-  },
-  {
-    id: "p3",
-    name: "Classic Solitaire Claw Ring",
+    id: "p-solitaire-ring",
+    name: "Heritage Floral Solitaire Statement Ring",
     category: "rings",
-    categoryLabel: "Rings",
-    price: 849,
-    originalPrice: 1199,
+    categoryLabel: "Rings & Solitaires",
+    price: 549,
+    originalPrice: 799,
     rating: 4.8,
-    reviewsCount: 188,
+    reviewsCount: 88,
     image: "/images/feature_rings.jpg",
-    badge: { text: "Few Left", variant: "few-left" },
-    plating: "Gold Plated Finish",
-    stones: "Sparkling American Diamond Solitaire",
-    description: "Elegant solitaire ring with a secure claw setting. Designed for comfortable everyday wear.",
+    badge: { text: "Under ₹1K", variant: "new" },
+    plating: "Gold Plated Brass",
+    stones: "Convex Crystal Facet with Carved Shank",
+    description: "Adjustable artisanal statement ring designed with an intricate floral border around a sparkling solitaire stone.",
     shippingStatus: "Ready to Ship",
   },
   {
-    id: "p4",
-    name: "Heritage Jadau Floral Openable Kada",
+    id: "p-polki-choker",
+    name: "Jaipur Kundan Polki Choker Set",
+    category: "festive",
+    categoryLabel: "Festive Ready",
+    price: 1899,
+    originalPrice: 2699,
+    rating: 5.0,
+    reviewsCount: 114,
+    image: "/images/polki_choker.jpg",
+    badge: { text: "Atelier Signature", variant: "bestseller" },
+    plating: "Meenakari Enamel & 24K Gold Foil",
+    stones: "Uncut Polki Stones, Natural Emerald Drops",
+    description: "Spectacular bridal choker set handset with uncut polki gems and genuine emerald drops.",
+    shippingStatus: "Ready to Ship",
+  },
+  {
+    id: "p-temple-kada",
+    name: "Temple Floral Studded Screw Kada",
     category: "bangles",
     categoryLabel: "Bangles & Kadas",
-    price: 1699,
-    originalPrice: 2299,
+    price: 999,
+    originalPrice: 1399,
     rating: 4.9,
     reviewsCount: 78,
     image: "/images/heritage_kada.jpg",
-    badge: { text: "Few Left", variant: "few-left" },
+    badge: { text: "Under ₹1K", variant: "few-left" },
     plating: "Matte Gold Finish",
-    stones: "Emerald green stones & pearl border",
+    stones: "Emerald Green Stones & Pearl Border",
     description: "Easy openable screw-lock kada that fits all wrist sizes. Detailed floral carving with smooth inner finish.",
     shippingStatus: "Ready to Ship",
   },
@@ -535,33 +385,39 @@ export default function App() {
   const [currentView, setCurrentView] = useState<"storefront" | "admin">(() => {
     return window.location.hash === "#admin" ? "admin" : "storefront";
   });
+
+  // Store Settings with persistence
+  const [storeSettings, setStoreSettings] = useState<StoreSettings>(() => {
+    try {
+      const saved = localStorage.getItem("shambhavi_store_settings_v1");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error("Error reading store settings from localStorage", e);
+    }
+    return DEFAULT_STORE_SETTINGS;
+  });
+
+  // Categories with persistence
+  const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem("shambhavi_categories_v1");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error("Error reading categories from localStorage", e);
+    }
+    return DEFAULT_CATEGORIES;
+  });
+
+  // Product Catalog with persistence
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem("shambhavi_products_catalog_v2");
       if (saved) return JSON.parse(saved);
     } catch (e) {
-      console.error(e);
+      console.error("Error reading products catalog from localStorage", e);
     }
-    return CATALOG_PRODUCTS;
+    return CURATED_PRODUCTS;
   });
-  const [announcementText, setAnnouncementText] = useState<string>(() => {
-    return (
-      localStorage.getItem("shambhavi_announcement_text") ||
-      "SHIPPING ALL ACROSS INDIA • DIRECT WHATSAPP ORDERS • HANDCRAFTED IN CHH. SAMBHAJINAGAR"
-    );
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("shambhavi_products_catalog_v2", JSON.stringify(products));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem("shambhavi_announcement_text", announcementText);
-  }, [announcementText]);
 
   useEffect(() => {
     const handleHash = () => {
@@ -588,6 +444,15 @@ export default function App() {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [emailInput, setEmailInput] = useState<string>("");
   const [subscribed, setSubscribed] = useState<boolean>(false);
+  const [shareToast, setShareToast] = useState<boolean>(false);
+
+  // Pagination state: clean initial view of 8 items
+  const [visibleCount, setVisibleCount] = useState<number>(8);
+
+  // Reset pagination when filter or search changes
+  useEffect(() => {
+    setVisibleCount(8);
+  }, [activeTab, searchQuery]);
 
   // Filter products based on selected tab & search query
   const filteredProducts = useMemo(() => {
@@ -607,20 +472,24 @@ export default function App() {
     });
   }, [products, activeTab, searchQuery]);
 
-  const toggleWishlist = (id: string) => {
+  const visibleProducts = useMemo(() => {
+    return filteredProducts.slice(0, visibleCount);
+  }, [filteredProducts, visibleCount]);
+
+  // Wishlist toggle
+  const toggleWishlist = (productId: string) => {
     setWishlist((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
     );
   };
 
+  // Cart operations
   const addToCart = (product: Product) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
         return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+          item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
       return [...prev, { product, quantity: 1 }];
@@ -629,8 +498,8 @@ export default function App() {
   };
 
   const updateCartQuantity = (productId: string, delta: number) => {
-    setCart((prev) =>
-      prev
+    setCart((prev) => {
+      return prev
         .map((item) => {
           if (item.product.id === productId) {
             const newQty = item.quantity + delta;
@@ -638,42 +507,54 @@ export default function App() {
           }
           return item;
         })
-        .filter(Boolean) as CartItem[]
-    );
+        .filter(Boolean) as CartItem[];
+    });
   };
 
   const cartTotal = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   }, [cart]);
 
-  const totalCartCount = useMemo(() => {
+  const cartItemsCount = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.quantity, 0);
   }, [cart]);
 
+  // WhatsApp helper using dynamic phone from storeSettings
   const handleOrderWhatsApp = (productName: string, price: number) => {
-    const message = encodeURIComponent(
-      `Hi Shambhavi Creation! I would like to order: *${productName}* (₹${price.toLocaleString()}). Please confirm availability & delivery details.`
-    );
-    window.open(`https://wa.me/919156131162?text=${message}`, "_blank");
+    const text = `Hello Shambhavi Creations, I would like to order "${productName}" (₹${price.toLocaleString()}) via your online storefront. Is it available for delivery?`;
+    window.open(formatWhatsAppLink(storeSettings.phone, text), "_blank");
   };
 
-  const handleCheckoutWhatsAppCart = () => {
+  const handleCheckoutCartWhatsApp = () => {
     if (cart.length === 0) return;
-    const itemList = cart
-      .map(
-        (item, index) =>
-          `${index + 1}. *${item.product.name}* (Qty: ${item.quantity}) - ₹${(
-            item.product.price * item.quantity
-          ).toLocaleString()}`
-      )
+    const itemsList = cart
+      .map((item) => `• ${item.product.name} (Qty: ${item.quantity}) - ₹${(item.product.price * item.quantity).toLocaleString()}`)
       .join("\n");
-
-    const message = encodeURIComponent(
-      `Hello Shambhavi Creation! I would like to place an order for the following curated pieces:\n\n${itemList}\n\n*Total Order Value:* ₹${cartTotal.toLocaleString()}\n*Shipping:* FREE (Standard Express)\n\nPlease share payment details and delivery timeframe.`
-    );
-    window.open(`https://wa.me/919156131162?text=${message}`, "_blank");
+    const message = `Hello Shambhavi Creations, I would like to place an order for the following items:\n\n${itemsList}\n\n*Total Order Value:* ₹${cartTotal.toLocaleString()}\n\nPlease confirm availability and delivery to my address.`;
+    window.open(formatWhatsAppLink(storeSettings.phone, message), "_blank");
   };
 
+  const handleShareWebsite = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: storeSettings.storeName,
+          text: `${storeSettings.storeName} — ${storeSettings.tagline}`,
+          url: window.location.href,
+        });
+        return;
+      } catch {
+        // Fallback to clipboard
+      }
+    }
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareToast(true);
+      setTimeout(() => setShareToast(false), 2500);
+    }
+  };
+
+  // If in admin view, render AdminPortal
   if (currentView === "admin") {
     return (
       <AdminPanel
@@ -684,47 +565,68 @@ export default function App() {
           window.location.hash = "#store";
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
-        announcementText={announcementText}
-        setAnnouncementText={setAnnouncementText}
+        storeSettings={storeSettings}
+        setStoreSettings={setStoreSettings}
+        categories={categories}
+        setCategories={setCategories}
       />
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#1F1E1D] font-sans antialiased selection:bg-[#9E7D4B] selection:text-white">
+    <div className="min-h-screen bg-[#FDFCFB] text-[#1F1E1D] font-sans antialiased selection:bg-[#9E7D4B] selection:text-white">
+      {/* Toast Notification */}
+      {shareToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#1F1E1D] text-white px-4 py-2.5 rounded-[2px] shadow-lg text-xs font-medium flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-[#1FA855]" />
+          <span>Store link copied to clipboard!</span>
+        </div>
+      )}
 
-      {/* ── 1. Clean Luxury Navigation Header ───────────────────────────────── */}
+      {/* 1. Luxury Gold Announcement Bar */}
+      <div className="bg-[#1F1E1D] text-[#FAF8F5] text-[0.62rem] sm:text-[0.68rem] tracking-[0.24em] font-medium py-2 px-4 uppercase text-center border-b border-[#33312E] flex items-center justify-center gap-2">
+        <Sparkles className="w-3 h-3 text-[#9E7D4B]" />
+        <span>{storeSettings.announcementText}</span>
+        <Sparkles className="w-3 h-3 text-[#9E7D4B]" />
+      </div>
+
+      {/* 2. Main Luxury Header */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#F0ECE6]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Mobile Hamburger Menu Button */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          {/* Mobile Menu & Logo Left */}
+          <div className="flex items-center space-x-3 sm:space-x-4">
             <button
-              type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-1.5 -ml-1 text-[#1F1E1D] hover:text-[#9E7D4B] transition-colors cursor-pointer"
-              aria-label="Toggle Navigation Menu"
+              className="lg:hidden p-1.5 text-[#1F1E1D] hover:text-[#9E7D4B] transition-colors cursor-pointer"
+              aria-label="Open navigation menu"
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              <Menu className="w-6 h-6 stroke-[1.5]" />
             </button>
 
-            {/* Brand Logo Wordmark */}
-            <a href="#" className="flex flex-col text-left group">
+            {/* Brand Logo & Tagline */}
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="flex flex-col text-left group cursor-pointer"
+            >
               <span className="font-serif-luxury font-semibold text-xl sm:text-2xl md:text-3xl tracking-[0.06em] sm:tracking-[0.08em] text-[#1F1E1D] leading-none group-hover:text-[#9E7D4B] transition-colors">
-                SHAMBHAVI
+                {storeSettings.storeName.toUpperCase()}
               </span>
               <span className="text-[0.52rem] sm:text-[0.62rem] uppercase tracking-[0.18em] sm:tracking-[0.3em] text-[#9E7D4B] font-semibold mt-1">
-                FINE JEWELLERY • CHH. SAMBHAJINAGAR
+                {storeSettings.tagline.toUpperCase()}
               </span>
-            </a>
+            </button>
           </div>
 
-          {/* Center Navigation Links (Desktop) */}
+          {/* Center Navigation Links (Laptop / Desktop) */}
           <nav className="hidden lg:flex items-center space-x-8 text-[0.82rem] font-medium tracking-wide text-[#4A4744]">
-            <a href="#" className="text-[#1F1E1D] hover:text-[#9E7D4B] transition-colors">
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="text-[#1F1E1D] hover:text-[#9E7D4B] transition-colors cursor-pointer"
+            >
               Home
-            </a>
+            </button>
 
-            {/* Direct Catalog Link to All Pieces */}
+            {/* Direct Catalog Link */}
             <button
               onClick={() => {
                 setActiveTab("all");
@@ -736,70 +638,34 @@ export default function App() {
               Catalog
             </button>
 
-            {/* Interactive Categories Dropdown */}
-            <div className="relative" onMouseLeave={() => setIsCategoriesOpen(false)}>
-              <button
-                onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                onMouseEnter={() => setIsCategoriesOpen(true)}
-                className="hover:text-[#9E7D4B] transition-colors flex items-center gap-1 text-[0.82rem] font-medium text-[#4A4744] cursor-pointer"
-              >
-                <span>Categories</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    isCategoriesOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
+            {/* Laptop View Categories Trigger Button */}
+            <button
+              onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+              className={`hover:text-[#9E7D4B] transition-colors flex items-center gap-1.5 text-[0.82rem] font-medium cursor-pointer py-1.5 px-2 rounded-sm ${
+                isCategoriesOpen ? "text-[#9E7D4B] bg-[#FAF8F5]" : "text-[#4A4744]"
+              }`}
+            >
+              <span>Categories</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  isCategoriesOpen ? "rotate-180 text-[#9E7D4B]" : ""
+                }`}
+              />
+            </button>
 
-              {isCategoriesOpen && (
-                <div
-                  onMouseEnter={() => setIsCategoriesOpen(true)}
-                  className="absolute top-full left-0 mt-2 w-64 bg-white border border-[#EAE5DC] shadow-xl rounded-[2px] py-2 z-50 text-left"
-                >
-                  <div className="px-3 py-1.5 text-[0.65rem] uppercase tracking-wider text-[#9E7D4B] font-bold border-b border-[#F0ECE6] mb-1">
-                    Select Jewelry Category
-                  </div>
-                  {CATEGORY_TABS.filter((t) => t.id !== "all").map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => {
-                        setActiveTab(cat.id);
-                        setIsCategoriesOpen(false);
-                        const el = document.getElementById("catalog");
-                        if (el) el.scrollIntoView({ behavior: "smooth" });
-                      }}
-                      className="w-full px-3 py-2 text-xs text-[#1F1E1D] hover:bg-[#FAF8F5] hover:text-[#9E7D4B] flex items-center justify-between text-left transition-colors cursor-pointer"
-                    >
-                      <span>{cat.label}</span>
-                      <span className="text-[0.65rem] text-[#78746F]">
-                        {
-                          products.filter((p) =>
-                            cat.id === "under-1000"
-                              ? p.price <= 1000
-                              : cat.id === "festive"
-                              ? p.category === "festive" || p.category === "polki"
-                              : p.category === cat.id
-                          ).length
-                        }
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
+            {/* WhatsApp Direct Nav */}
             <a
-              href="https://wa.me/919156131162"
+              href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I am browsing your jewellery catalog.")}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#1FA855] font-semibold flex items-center gap-1.5 hover:underline"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#1FA855]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1FA855] animate-pulse" />
               WhatsApp
             </a>
           </nav>
 
-          {/* Right Action Icons (Interactive Search, Wishlist, Cart Drawer) - Admin Button Hidden */}
+          {/* Right Action Icons */}
           <div className="flex items-center space-x-2.5 sm:space-x-4 text-[#1F1E1D]">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -811,12 +677,12 @@ export default function App() {
 
             <button
               onClick={() => setIsWishlistOpen(true)}
-              className="p-1.5 hover:text-[#9E7D4B] transition-colors relative cursor-pointer"
+              className="relative p-1.5 hover:text-[#9E7D4B] transition-colors cursor-pointer"
               aria-label="Wishlist"
             >
               <Heart className="w-5 h-5 stroke-[1.5]" />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#9E7D4B] text-white text-[0.62rem] rounded-full flex items-center justify-center font-bold">
+                <span className="absolute top-0 right-0 w-4 h-4 bg-[#9E7D4B] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                   {wishlist.length}
                 </span>
               )}
@@ -824,34 +690,124 @@ export default function App() {
 
             <button
               onClick={() => setIsCartOpen(true)}
-              className="p-1.5 hover:text-[#9E7D4B] transition-colors relative cursor-pointer"
+              className="relative p-1.5 hover:text-[#9E7D4B] transition-colors cursor-pointer"
               aria-label="Cart"
             >
               <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
-              {totalCartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#1F1E1D] text-white text-[0.62rem] rounded-full flex items-center justify-center font-bold">
-                  {totalCartCount}
+              {cartItemsCount > 0 && (
+                <span className="absolute top-0 right-0 w-4 h-4 bg-[#1F1E1D] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {cartItemsCount}
                 </span>
               )}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer / Dropdown */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white/98 backdrop-blur-md border-t border-[#F0ECE6] px-5 py-5 animate-in slide-in-from-top-2 duration-200 shadow-2xl text-left">
-            <div className="flex flex-col space-y-1">
-              {/* Home */}
-              <a
-                href="#"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="py-3 text-sm font-serif-luxury text-[#1F1E1D] hover:text-[#9E7D4B] border-b border-[#FAF8F5] flex items-center justify-between transition-colors"
-              >
-                <span>Home</span>
-                <ChevronRight className="w-3.5 h-3.5 text-[#C8B89C]" />
-              </a>
+        {/* FULL-WIDTH LAPTOP VIEW CATEGORY MEGA MENU */}
+        {isCategoriesOpen && (
+          <div
+            onMouseLeave={() => setIsCategoriesOpen(false)}
+            className="hidden lg:block absolute top-full left-0 right-0 w-full bg-white border-b border-[#EAE5DC] shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+          >
+            <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+              {/* Mega Menu Top Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-[#F0ECE6]">
+                <div>
+                  <span className="text-[0.65rem] uppercase tracking-[0.24em] text-[#9E7D4B] font-bold block">
+                    ATELIER COLLECTIONS
+                  </span>
+                  <h3 className="font-serif-luxury text-xl sm:text-2xl text-[#1F1E1D] font-normal mt-0.5">
+                    Explore Handcrafted Jewellery by Category
+                  </h3>
+                </div>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => {
+                      setActiveTab("all");
+                      setIsCategoriesOpen(false);
+                      const el = document.getElementById("catalog");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="text-xs font-semibold text-[#9E7D4B] hover:text-[#1F1E1D] transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>View All Pieces ({products.length})</span>
+                    <span>→</span>
+                  </button>
+                  <button
+                    onClick={() => setIsCategoriesOpen(false)}
+                    className="p-1.5 text-[#78746F] hover:text-[#1F1E1D] hover:bg-[#FAF8F5] rounded-full transition-colors cursor-pointer"
+                    aria-label="Close categories"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
 
-              {/* Complete Catalog */}
+              {/* Grid of Category Cards with Image Previews */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-6">
+                {categories.filter((c) => c.id !== "all").map((cat) => {
+                  const count = products.filter((p) =>
+                    cat.id === "under-1000"
+                      ? p.price <= 1000
+                      : cat.id === "festive"
+                      ? p.category === "festive" || p.category === "polki"
+                      : p.category === cat.id
+                  ).length;
+
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => {
+                        setActiveTab(cat.id);
+                        setIsCategoriesOpen(false);
+                        const el = document.getElementById("catalog");
+                        if (el) el.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="group flex flex-col text-left rounded-[3px] border border-[#F0ECE6] hover:border-[#9E7D4B] p-2.5 bg-white hover:bg-[#FAF8F5]/60 hover:shadow-md transition-all duration-300 cursor-pointer"
+                    >
+                      <div className="aspect-[4/3] w-full rounded-[2px] overflow-hidden bg-[#FAF8F5] mb-3 relative">
+                        <img
+                          src={resolveAsset(cat.image)}
+                          alt={cat.label}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <span className="absolute bottom-1.5 right-1.5 bg-black/60 backdrop-blur-xs text-white text-[10px] font-sans font-medium px-1.5 py-0.5 rounded-[2px]">
+                          {count} {count === 1 ? "piece" : "pieces"}
+                        </span>
+                      </div>
+                      <h4 className="font-serif-luxury text-sm font-medium text-[#1F1E1D] group-hover:text-[#9E7D4B] transition-colors line-clamp-1">
+                        {cat.label}
+                      </h4>
+                      {cat.subtitle && (
+                        <p className="text-[11px] text-[#78746F] line-clamp-1 mt-0.5">
+                          {cat.subtitle}
+                        </p>
+                      )}
+                      <span className="mt-2 text-[10px] font-semibold text-[#9E7D4B] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                        Explore Collection →
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Slide-out Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-white border-b border-[#EAE5DC] px-6 py-6 space-y-4 animate-in slide-in-from-top-4 duration-300">
+            <nav className="flex flex-col space-y-3 text-left">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="py-2 text-base font-serif-luxury text-[#1F1E1D] hover:text-[#9E7D4B] border-b border-[#FAF8F5] text-left cursor-pointer"
+              >
+                Home
+              </button>
+
               <button
                 onClick={() => {
                   setActiveTab("all");
@@ -859,27 +815,21 @@ export default function App() {
                   const el = document.getElementById("catalog");
                   if (el) el.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="py-3 text-sm font-serif-luxury text-[#1F1E1D] hover:text-[#9E7D4B] border-b border-[#FAF8F5] flex items-center justify-between w-full text-left transition-colors cursor-pointer"
+                className="py-2 text-base font-serif-luxury text-[#1F1E1D] hover:text-[#9E7D4B] border-b border-[#FAF8F5] text-left cursor-pointer"
               >
-                <div className="flex items-center gap-2">
-                  <span>Complete Catalog</span>
-                  <span className="text-[0.65rem] font-sans font-semibold bg-[#FAF8F5] text-[#9E7D4B] px-2 py-0.5 rounded-full border border-[#EAE5DC]">
-                    {products.length} Designs
-                  </span>
-                </div>
-                <ChevronRight className="w-3.5 h-3.5 text-[#C8B89C]" />
+                Catalog (All Designs)
               </button>
 
-              {/* Collapsible Categories Accordion */}
-              <div className="border-b border-[#FAF8F5] py-1">
+              {/* Mobile Categories Collapsible */}
+              <div className="border-b border-[#FAF8F5] pb-2">
                 <button
                   onClick={() => setIsMobileCategoriesOpen(!isMobileCategoriesOpen)}
-                  className="py-2.5 text-sm font-serif-luxury text-[#1F1E1D] hover:text-[#9E7D4B] flex items-center justify-between w-full text-left transition-colors cursor-pointer"
+                  className="w-full py-2 text-base font-serif-luxury text-[#1F1E1D] hover:text-[#9E7D4B] flex items-center justify-between transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <span>Shop by Category</span>
                     <span className="text-[0.62rem] font-sans uppercase tracking-wider text-[#9E7D4B] font-bold">
-                      ({CATEGORY_TABS.filter((t) => t.id !== "all").length} Collections)
+                      ({categories.filter((t) => t.id !== "all").length} Collections)
                     </span>
                   </div>
                   <ChevronDown
@@ -891,7 +841,7 @@ export default function App() {
 
                 {isMobileCategoriesOpen && (
                   <div className="pb-2 pt-1 pl-2 space-y-1 animate-in fade-in duration-200">
-                    {CATEGORY_TABS.filter((t) => t.id !== "all").map((cat) => {
+                    {categories.filter((t) => t.id !== "all").map((cat) => {
                       const count = products.filter((p) =>
                         cat.id === "under-1000"
                           ? p.price <= 1000
@@ -908,11 +858,11 @@ export default function App() {
                             const el = document.getElementById("catalog");
                             if (el) el.scrollIntoView({ behavior: "smooth" });
                           }}
-                          className="w-full py-2 px-3 text-xs font-sans text-[#4A4744] hover:text-[#9E7D4B] hover:bg-[#FAF8F5] rounded-[2px] flex items-center justify-between transition-colors text-left cursor-pointer"
+                          className="w-full py-1.5 px-3 rounded-[2px] text-xs text-[#4A4744] hover:bg-[#FAF8F5] hover:text-[#9E7D4B] flex items-center justify-between text-left transition-colors cursor-pointer"
                         >
-                          <span className="font-medium">{cat.label}</span>
-                          <span className="text-[0.65rem] text-[#9E7D4B] font-semibold bg-[#FAF8F5] px-2 py-0.5 rounded-full border border-[#EAE5DC]/60">
-                            {count} designs
+                          <span>{cat.label}</span>
+                          <span className="text-[0.65rem] text-[#78746F] font-mono">
+                            {count} pieces
                           </span>
                         </button>
                       );
@@ -924,21 +874,21 @@ export default function App() {
               {/* WhatsApp direct CTA */}
               <div className="pt-3">
                 <a
-                  href="https://wa.me/919156131162?text=Hello%20Shambhavi%20Creations%2C%20I%20am%20browsing%20your%20jewellery%20catalog"
+                  href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I am browsing your jewellery catalog.")}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="w-full py-2.5 bg-[#1FA855] hover:bg-[#1B944B] text-white rounded-[2px] text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-colors"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  <span>WhatsApp Inquiry: +91 91561 31162</span>
+                  <span>Chat directly with {storeSettings.ownerName}</span>
                 </a>
               </div>
-            </div>
+            </nav>
           </div>
         )}
 
-        {/* Expandable Live Search Bar (From Mihira Jewels catalog) */}
+        {/* Expandable Live Search Bar */}
         {isSearchOpen && (
           <div className="bg-[#FAF8F5] border-t border-[#EAE5DC] px-4 py-3 transition-all duration-300">
             <div className="max-w-3xl mx-auto flex items-center gap-3">
@@ -954,14 +904,14 @@ export default function App() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="text-xs text-[#78746F] hover:text-[#1F1E1D]"
+                  className="text-xs text-[#78746F] hover:text-[#1F1E1D] cursor-pointer"
                 >
                   Clear
                 </button>
               )}
               <button
                 onClick={() => setIsSearchOpen(false)}
-                className="p-1 text-[#78746F] hover:text-[#1F1E1D]"
+                className="p-1 text-[#78746F] hover:text-[#1F1E1D] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -970,43 +920,54 @@ export default function App() {
         )}
       </header>
 
-      {/* ── 3. Hero Section (Aurelia Fine Jewelry Aesthetic with Vogue Photography) ─ */}
+      {/* 3. Hero Section */}
       <section className="bg-[#FAF8F5] relative overflow-hidden border-b border-[#F0ECE6]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             {/* Left Copy Column */}
             <div className="lg:col-span-6 space-y-6 text-left">
-
-
               <h1 className="font-serif-luxury text-4xl sm:text-5xl lg:text-6xl text-[#1F1E1D] font-normal leading-[1.12]">
                 Jewelry That <br />
                 <span className="italic font-normal">Tells Your Story</span>
               </h1>
 
               <p className="text-[#78746F] text-sm sm:text-base max-w-md leading-relaxed font-light">
-                Artisanal Kundan polki, South Indian temple jewellery, and elegant daily wear. Handcrafted in Chh. Sambhajinagar with care.
+                Artisanal Kundan polki, South Indian temple jewellery, and elegant daily wear. Handcrafted in {storeSettings.city} with care.
               </p>
 
               {/* Action Buttons */}
               <div className="pt-2 flex flex-wrap items-center gap-4">
-                <a href="#catalog" className="btn-bronze shadow-sm">
+                <button
+                  onClick={() => {
+                    const el = document.getElementById("catalog");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="btn-bronze shadow-sm cursor-pointer flex items-center gap-2"
+                >
                   <span>EXPLORE CATALOG</span>
                   <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+                <a
+                  href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I would like to book a bridal jewellery consultation.")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-bronze-outline"
+                >
+                  BRIDAL CONSULTATION
                 </a>
               </div>
             </div>
 
-            {/* Right Photo Column with Handwritten Script Overlay */}
+            {/* Right Photo Column */}
             <div className="lg:col-span-6 relative">
               <div className="relative rounded-[2px] overflow-hidden shadow-lg aspect-square sm:aspect-[4/3] border border-[#EAE5DC]">
                 <img
                   src={resolveAsset("/photos/hero_model_bangles.jpg")}
-                  alt="Shambhavi Creations Traditional Look — Chh. Sambhajinagar"
+                  alt="Shambhavi Creations Traditional Look"
                   className="w-full h-full object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
 
-                {/* Script overlay exactly like reference */}
                 <div className="absolute bottom-6 right-6 text-right pointer-events-none drop-shadow-md">
                   <span className="font-serif-luxury italic text-xl sm:text-2xl text-white block leading-tight font-light">
                     More Than Jewelry,
@@ -1021,9 +982,8 @@ export default function App() {
         </div>
       </section>
 
-
-      {/* ── 5. Curated Visual Stories (Quick Highlight Bubbles) ─────────────── */}
-      <section id="categories" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* 4. Curated Visual Highlight Bubbles */}
+      <section id="categories" className="py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <span className="text-[0.68rem] uppercase tracking-[0.24em] text-[#9E7D4B] font-semibold block mb-1">
           CURATED VISUAL STORIES
         </span>
@@ -1034,8 +994,7 @@ export default function App() {
           Tap any story circle to instantly filter by bridal looks, signature wati haars, and festive kadas.
         </p>
 
-        {/* 7 Circular Category Bubbles with Clickable Tab Triggers (Mobile Horizontal Snap Scroll) */}
-        <div className="mt-8 sm:mt-12 flex md:grid md:grid-cols-7 gap-4 sm:gap-4 overflow-x-auto pb-4 pt-1 scrollbar-none snap-x snap-mandatory justify-start md:justify-center -mx-4 px-4 sm:mx-0">
+        <div className="mt-8 flex md:grid md:grid-cols-7 gap-4 overflow-x-auto pb-4 pt-1 scrollbar-none snap-x snap-mandatory justify-start md:justify-center -mx-4 px-4 sm:mx-0">
           {CIRCULAR_STORIES.map((cat) => (
             <button
               key={cat.name}
@@ -1046,14 +1005,14 @@ export default function App() {
               }}
               className="flex flex-col items-center group cursor-pointer focus:outline-none shrink-0 snap-start w-20 sm:w-auto"
             >
-              <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-[#EAE5DC] group-hover:border-[#9E7D4B] transition-all duration-300 p-1 shadow-sm bg-white">
+              <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-full overflow-hidden border-2 border-[#EAE5DC] group-hover:border-[#9E7D4B] transition-all duration-300 p-1 shadow-sm bg-white">
                 <img
                   src={resolveAsset(cat.image)}
                   alt={cat.name}
                   className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
-              <span className="mt-2.5 text-[0.72rem] sm:text-xs font-medium text-[#1F1E1D] group-hover:text-[#9E7D4B] transition-colors text-center line-clamp-1">
+              <span className="mt-2 text-[0.72rem] sm:text-xs font-medium text-[#1F1E1D] group-hover:text-[#9E7D4B] transition-colors text-center line-clamp-1">
                 {cat.name}
               </span>
             </button>
@@ -1061,7 +1020,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── 6. Interactive Complete Catalog & Product Showcase ───────────────── */}
+      {/* 5. Complete Catalog & Product Showcase (De-cluttered with Load More) */}
       <section id="catalog" className="py-16 bg-[#FAF8F5] border-t border-[#F0ECE6]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
@@ -1071,28 +1030,27 @@ export default function App() {
                 COMPLETE CATALOG
               </span>
               <h2 className="font-serif-luxury text-3xl sm:text-4xl text-[#1F1E1D] font-normal">
-                All Handcrafted Pieces ({products.length})
+                {activeTab === "all" ? "All Handcrafted Pieces" : categories.find((c) => c.id === activeTab)?.label || "Selected Collection"} ({filteredProducts.length})
               </h2>
               <p className="text-xs sm:text-sm text-[#78746F] mt-1">
-                Handcrafted with care in Chh. Sambhajinagar. Filter by category or search below.
+                Handcrafted with care in {storeSettings.city}. Tap any piece for full details and WhatsApp ordering.
               </p>
             </div>
 
-            {/* Total Results Count */}
             <div className="mt-4 md:mt-0 text-xs text-[#78746F]">
-              Showing <span className="font-semibold text-[#1F1E1D]">{filteredProducts.length}</span> handcrafted designs
+              Showing <span className="font-semibold text-[#1F1E1D]">{visibleProducts.length}</span> of <span className="font-semibold text-[#1F1E1D]">{filteredProducts.length}</span> pieces
             </div>
           </div>
 
-          {/* Catalog Filter Pills (Signature layout touch from jewelry-catalog-one) */}
+          {/* Catalog Filter Pills */}
           <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 scrollbar-none">
-            {CATEGORY_TABS.map((tab) => {
+            {categories.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 shrink-0 border ${
+                  className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 shrink-0 border cursor-pointer ${
                     isActive
                       ? "bg-[#1F1E1D] text-white border-[#1F1E1D] shadow-xs"
                       : "bg-white text-[#4A4744] border-[#EAE5DC] hover:border-[#9E7D4B] hover:text-[#9E7D4B]"
@@ -1104,7 +1062,7 @@ export default function App() {
             })}
           </div>
 
-          {/* Product Cards Grid (Matching reference + catalog touches) */}
+          {/* Product Cards Grid */}
           {filteredProducts.length === 0 ? (
             <div className="bg-white rounded-[2px] border border-[#EAE5DC] p-12 text-center max-w-md mx-auto my-8 space-y-4">
               <Sparkles className="w-8 h-8 text-[#9E7D4B] mx-auto stroke-[1.5]" />
@@ -1117,14 +1075,14 @@ export default function App() {
                   setActiveTab("all");
                   setSearchQuery("");
                 }}
-                className="btn-bronze text-xs py-2 px-4"
+                className="btn-bronze text-xs py-2 px-4 cursor-pointer"
               >
                 VIEW ALL DESIGNS
               </button>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-              {filteredProducts.map((product) => {
+              {visibleProducts.map((product) => {
                 const isWishlisted = wishlist.includes(product.id);
                 const discount = Math.round(
                   ((product.originalPrice - product.price) / product.originalPrice) * 100
@@ -1136,9 +1094,7 @@ export default function App() {
                     className="group relative flex flex-col text-left cursor-pointer"
                     onClick={() => setQuickViewProduct(product)}
                   >
-                    {/* Exact Image Container with 4:5 Aspect Ratio & Hairline Border */}
                     <div className="relative aspect-[4/5] w-full overflow-hidden bg-white border border-[#D9DCD8]/70 rounded-none shadow-2xs">
-                      {/* 'New' Badge Top-Left in soft blush/rose tone exactly from screenshot */}
                       {product.badge && (
                         <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 flex flex-col gap-1 pointer-events-none z-10">
                           <span className="bg-[#E9CFCB] text-[#1E2321] text-[10px] sm:text-[11px] font-sans font-medium px-1.5 sm:px-2 py-0.5 rounded-[2px] tracking-wide shadow-2xs">
@@ -1147,14 +1103,13 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Wishlist Heart Button Top-Right: Circular white with outline heart */}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleWishlist(product.id);
                         }}
-                        className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/95 hover:bg-white flex items-center justify-center text-[#1E2321] transition-all z-10 shadow-2xs hover:scale-105"
+                        className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/95 hover:bg-white flex items-center justify-center text-[#1E2321] transition-all z-10 shadow-2xs hover:scale-105 cursor-pointer"
                         aria-label="Save to wishlist"
                       >
                         <Heart
@@ -1166,7 +1121,6 @@ export default function App() {
                         />
                       </button>
 
-                      {/* Product Image */}
                       <img
                         src={resolveAsset(product.image)}
                         alt={product.name}
@@ -1174,7 +1128,6 @@ export default function App() {
                         loading="lazy"
                       />
 
-                      {/* Quick View Button Overlay on Hover (Desktop) */}
                       <div className="hidden lg:block absolute inset-x-2.5 bottom-2.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <button
                           type="button"
@@ -1182,7 +1135,7 @@ export default function App() {
                             e.stopPropagation();
                             setQuickViewProduct(product);
                           }}
-                          className="w-full py-2 bg-white/95 hover:bg-white text-[#1E2321] text-[12px] font-medium rounded-[3px] border border-[#D9DCD8] shadow-xs flex items-center justify-center gap-1.5 transition-colors"
+                          className="w-full py-2 bg-white/95 hover:bg-white text-[#1E2321] text-[12px] font-medium rounded-[3px] border border-[#D9DCD8] shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5 text-[#17382F]" />
                           <span>Quick view</span>
@@ -1190,37 +1143,69 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Product Title directly under image */}
                     <div className="mt-2 sm:mt-2.5 text-left">
                       <h3 className="font-sans font-medium text-[13px] sm:text-[15px] leading-snug text-[#1E2321] line-clamp-1 group-hover:text-[#9E7D4B] transition-colors">
                         {product.name}
                       </h3>
                     </div>
 
-                    {/* Exact Price Line: Rs. 849  Rs. 1,299  35% off */}
                     <div className="mt-0.5 sm:mt-1 flex items-baseline gap-1.5 sm:gap-2 text-left flex-wrap">
                       <span className="font-sans font-semibold text-[13px] sm:text-[15px] text-[#1E2321] tabular-nums">
-                        Rs. {product.price.toLocaleString()}
+                        ₹{product.price.toLocaleString()}
                       </span>
-                      <span className="font-sans text-[11px] sm:text-[13px] text-[#717674] line-through tabular-nums">
-                        Rs. {product.originalPrice.toLocaleString()}
-                      </span>
-                      <span className="font-sans text-[10px] sm:text-[12px] font-medium text-[#9C2B2B]">
-                        {discount}% off
-                      </span>
+                      {product.originalPrice > product.price && (
+                        <>
+                          <span className="font-sans text-[11px] sm:text-[13px] text-[#717674] line-through tabular-nums">
+                            ₹{product.originalPrice.toLocaleString()}
+                          </span>
+                          <span className="font-sans text-[10px] sm:text-[12px] font-medium text-[#9C2B2B]">
+                            {discount}% off
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
           )}
+
+          {/* Clean Pagination / Load More Bar */}
+          {visibleCount < filteredProducts.length && (
+            <div className="mt-12 pt-8 border-t border-[#EAE5DC] flex flex-col items-center justify-center gap-3 text-center">
+              <div className="w-48 h-1 bg-[#EAE5DC] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#9E7D4B] transition-all duration-300"
+                  style={{
+                    width: `${Math.min(100, (visibleProducts.length / filteredProducts.length) * 100)}%`,
+                  }}
+                />
+              </div>
+              <span className="text-xs text-[#78746F]">
+                Showing {visibleProducts.length} of {filteredProducts.length} pieces
+              </span>
+              <div className="flex items-center gap-3 mt-1">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 8)}
+                  className="btn-bronze text-xs py-2.5 px-6 rounded-sm cursor-pointer shadow-sm"
+                >
+                  SHOW MORE DESIGNS ({filteredProducts.length - visibleCount} REMAINING)
+                </button>
+                <button
+                  onClick={() => setVisibleCount(filteredProducts.length)}
+                  className="text-xs text-[#4A4744] hover:text-[#9E7D4B] underline underline-offset-4 cursor-pointer font-medium"
+                >
+                  View All ({filteredProducts.length})
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* ── 7. Dual Editorial Feature Banners (50/50 Split from Aurelia) ───── */}
+      {/* 6. Dual Editorial Feature Banners */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Promo Card: Crafted for Life's Special Moments */}
           <div className="relative rounded-[2px] overflow-hidden min-h-[380px] flex items-center justify-start p-8 sm:p-12 shadow-sm group border border-[#EAE5DC]">
             <img
               src={resolveAsset("/images/feature_rings.jpg")}
@@ -1242,7 +1227,7 @@ export default function App() {
                   const el = document.getElementById("catalog");
                   if (el) el.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="btn-bronze bg-white/95 text-[#1F1E1D] hover:bg-white text-xs font-semibold py-2.5 px-5 rounded-[2px]"
+                className="btn-bronze bg-white/95 text-[#1F1E1D] hover:bg-white text-xs font-semibold py-2.5 px-5 rounded-[2px] cursor-pointer"
               >
                 <span>EXPLORE WEDDING</span>
                 <span>→</span>
@@ -1250,7 +1235,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Promo Card: A Gift That Lasts Forever */}
           <div className="relative rounded-[2px] overflow-hidden min-h-[380px] flex items-center justify-start p-8 sm:p-12 shadow-sm group border border-[#EAE5DC]">
             <img
               src={resolveAsset("/images/feature_gift.jpg")}
@@ -1272,7 +1256,7 @@ export default function App() {
                   const el = document.getElementById("catalog");
                   if (el) el.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="btn-bronze bg-white/95 text-[#1F1E1D] hover:bg-white text-xs font-semibold py-2.5 px-5 rounded-[2px]"
+                className="btn-bronze bg-white/95 text-[#1F1E1D] hover:bg-white text-xs font-semibold py-2.5 px-5 rounded-[2px] cursor-pointer"
               >
                 <span>SHOP GIFTS</span>
                 <span>→</span>
@@ -1282,8 +1266,7 @@ export default function App() {
         </div>
       </section>
 
-
-      {/* ── 12. Newsletter / Exclusive Offers Banner ───────────────────────── */}
+      {/* 7. Newsletter Banner */}
       <section className="bg-[#FAF8F5] border-y border-[#F0ECE6] py-14">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-5">
           <h2 className="font-serif-luxury text-3xl sm:text-4xl text-[#1F1E1D] font-normal">
@@ -1308,7 +1291,7 @@ export default function App() {
               className="w-full sm:flex-1 bg-white border border-[#EAE5DC] px-4 py-3 text-xs text-[#1F1E1D] placeholder-[#78746F] rounded-[2px] focus:outline-none focus:border-[#9E7D4B]"
               required
             />
-            <button type="submit" className="btn-bronze w-full sm:w-auto py-3 px-6 rounded-[2px]">
+            <button type="submit" className="btn-bronze w-full sm:w-auto py-3 px-6 rounded-[2px] cursor-pointer">
               {subscribed ? "THANK YOU FOR SUBSCRIBING ♡" : "SUBSCRIBE"}
             </button>
           </form>
@@ -1319,50 +1302,77 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── 13. Clean Minimalist Footer ───────────────────────────────────── */}
+      {/* 8. Luxury Footer with All Functional Redirects */}
       <footer className="bg-white text-[#1F1E1D] pt-16 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#F0ECE6] text-left">
             {/* Brand Col */}
             <div className="lg:col-span-2 space-y-4">
-              <span className="font-serif-luxury font-semibold text-2xl tracking-[0.06em] text-[#1F1E1D] block">
-                SHAMBHAVI
-              </span>
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="font-serif-luxury font-semibold text-2xl tracking-[0.06em] text-[#1F1E1D] block cursor-pointer text-left"
+              >
+                {storeSettings.storeName.toUpperCase()}
+              </button>
               <span className="text-[0.62rem] uppercase tracking-[0.24em] text-[#9E7D4B] font-semibold block -mt-2">
-                FINE JEWELLERY • CHH. SAMBHAJINAGAR
+                {storeSettings.tagline.toUpperCase()}
               </span>
               <p className="text-xs text-[#78746F] max-w-sm leading-relaxed">
-                Timeless imitation sets, custom bridal nails, and handcrafted festive rangolis. Hand-assembled with care in Chh. Sambhajinagar.
+                Timeless imitation jewellery, custom bridal designs, and authentic handcrafted ornaments made with care in {storeSettings.city}.
               </p>
               {/* Social icons */}
               <div className="flex items-center gap-4 text-[#1F1E1D] pt-2">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#9E7D4B] transition-colors" aria-label="Facebook">
+                <a
+                  href={storeSettings.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#9E7D4B] transition-colors"
+                  aria-label="Instagram"
+                >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
                   </svg>
                 </a>
-                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#9E7D4B] transition-colors" aria-label="YouTube">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/>
-                    <polygon points="10 15 15 12 10 9 10 15" fill="currentColor"/>
-                  </svg>
+                <a
+                  href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I would like to inquire about your jewellery collections.")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#1FA855] transition-colors"
+                  aria-label="WhatsApp"
+                >
+                  <span className="text-xs font-semibold bg-[#1FA855]/10 text-[#1FA855] px-2 py-0.5 rounded-[2px]">WhatsApp</span>
                 </a>
-                <a href="#" className="hover:text-[#9E7D4B] transition-colors" aria-label="Share">
+                <button
+                  onClick={handleShareWebsite}
+                  className="hover:text-[#9E7D4B] transition-colors cursor-pointer"
+                  aria-label="Share Store Link"
+                  title="Share Store Link"
+                >
                   <Share2 className="w-4 h-4" />
-                </a>
+                </button>
               </div>
             </div>
 
-            {/* Shop Column */}
+            {/* Quick Links Column */}
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-[#1F1E1D] uppercase tracking-wider">Shop</h4>
+              <h4 className="text-xs font-semibold text-[#1F1E1D] uppercase tracking-wider">Shop Collections</h4>
               <ul className="space-y-2 text-xs text-[#78746F]">
-                <li><button onClick={() => { setActiveTab("all"); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1F1E1D]">All Products</button></li>
-                <li><button onClick={() => { setActiveTab("rings"); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1F1E1D]">Rings</button></li>
-                <li><button onClick={() => { setActiveTab("necklaces"); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1F1E1D]">Necklaces</button></li>
-                <li><button onClick={() => { setActiveTab("earrings"); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1F1E1D]">Earrings</button></li>
-                <li><button onClick={() => { setActiveTab("bangles"); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1F1E1D]">Bangles</button></li>
-                <li><button onClick={() => { setActiveTab("festive"); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1F1E1D]">Bridal & Festive</button></li>
+                {categories.filter((c) => c.id !== "all").slice(0, 5).map((cat) => (
+                  <li key={cat.id}>
+                    <button
+                      onClick={() => {
+                        setActiveTab(cat.id);
+                        const el = document.getElementById("catalog");
+                        if (el) el.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="hover:text-[#1F1E1D] cursor-pointer"
+                    >
+                      {cat.label}
+                    </button>
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -1370,27 +1380,92 @@ export default function App() {
             <div className="space-y-3">
               <h4 className="text-xs font-semibold text-[#1F1E1D] uppercase tracking-wider">About</h4>
               <ul className="space-y-2 text-xs text-[#78746F]">
-                <li><a href="#catalog" className="hover:text-[#1F1E1D]">Jaipur & Chh. Sambhajinagar Craft</a></li>
-                <li><a href="https://wa.me/919156131162" className="hover:text-[#1F1E1D]">Quality Guarantee</a></li>
-                <li><a href="https://wa.me/919156131162" className="hover:text-[#1F1E1D]">Design Consultation</a></li>
+                <li>
+                  <button
+                    onClick={() => {
+                      setActiveTab("all");
+                      const el = document.getElementById("catalog");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-[#1F1E1D] cursor-pointer"
+                  >
+                    Atelier Handcrafted Catalog
+                  </button>
+                </li>
+                <li>
+                  <a
+                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I want to know more about your Quality Guarantee and materials.")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#1F1E1D]"
+                  >
+                    Quality Guarantee
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I would like to book a bridal jewellery design consultation.")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#1F1E1D]"
+                  >
+                    Design Consultation
+                  </a>
+                </li>
               </ul>
             </div>
 
-            {/* Customer Care */}
+            {/* Customer Care Column */}
             <div className="space-y-3">
               <h4 className="text-xs font-semibold text-[#1F1E1D] uppercase tracking-wider">Customer Care</h4>
               <ul className="space-y-2 text-xs text-[#78746F]">
-                <li><a href="https://wa.me/919156131162" className="hover:text-[#1F1E1D]">Track Order (WhatsApp)</a></li>
-                <li><a href="#" className="hover:text-[#1F1E1D]">Returns & Exchanges</a></li>
-                <li><a href="#" className="hover:text-[#1F1E1D]">Bangle Size Guide</a></li>
-                <li><a href="https://wa.me/919156131162" className="hover:text-[#1F1E1D]">Instant Support</a></li>
+                <li>
+                  <a
+                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I would like to track my order.")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#1F1E1D]"
+                  >
+                    Track Order (WhatsApp)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I have an inquiry regarding your returns and exchange policy.")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#1F1E1D]"
+                  >
+                    Returns & Exchanges
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, could you please help me with the Bangle & Ring Size Guide?")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#1F1E1D]"
+                  >
+                    Bangle Size Guide
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I need instant customer support.")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#1F1E1D]"
+                  >
+                    Instant WhatsApp Support
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
 
           {/* Bottom Copyright & Admin Access */}
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[0.72rem] text-[#78746F] gap-2">
-            <p>© 2026 Shambhavi Creation. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} {storeSettings.storeName}. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => {
@@ -1398,32 +1473,31 @@ export default function App() {
                   window.location.hash = "#admin";
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="hover:text-[#9E7D4B] transition-colors underline underline-offset-4 cursor-pointer"
+                className="hover:text-[#9E7D4B] transition-colors underline underline-offset-4 cursor-pointer font-medium"
               >
                 Owner Admin Access ↗
               </button>
               <span>•</span>
               <p className="font-serif-luxury italic text-[#9E7D4B]">
-                Handcrafted in Chh. Sambhajinagar with ♡
+                Handcrafted in {storeSettings.city} with ♡
               </p>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* ── 14. Interactive Quick View Modal / Drawer (Mihira Jewels style) ─── */}
+      {/* 9. Interactive Quick View Modal */}
       {quickViewProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="bg-white rounded-[2px] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[#EAE5DC] relative animate-in fade-in zoom-in-95 duration-200">
             <button
               onClick={() => setQuickViewProduct(null)}
-              className="absolute top-4 right-4 p-2 text-[#78746F] hover:text-[#1F1E1D] z-10 rounded-full hover:bg-[#FAF8F5]"
+              className="absolute top-4 right-4 p-2 text-[#78746F] hover:text-[#1F1E1D] z-10 rounded-full hover:bg-[#FAF8F5] cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 sm:p-8">
-              {/* Product Visual */}
               <div className="aspect-square rounded-[2px] overflow-hidden bg-[#FAF8F5] border border-[#EAE5DC]">
                 <img
                   src={resolveAsset(quickViewProduct.image)}
@@ -1432,7 +1506,6 @@ export default function App() {
                 />
               </div>
 
-              {/* Product Details & Specifications */}
               <div className="space-y-4 text-left flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -1440,7 +1513,7 @@ export default function App() {
                       {quickViewProduct.categoryLabel}
                     </span>
                     <span className="text-[0.62rem] bg-[#EBF7EE] text-[#1E7E34] px-1.5 py-0.5 rounded-sm font-semibold">
-                      In Stock
+                      {quickViewProduct.shippingStatus}
                     </span>
                   </div>
 
@@ -1452,47 +1525,40 @@ export default function App() {
                     <span className="text-2xl font-semibold text-[#1F1E1D]">
                       ₹{quickViewProduct.price.toLocaleString()}
                     </span>
-                    <span className="text-sm text-[#78746F] line-through">
-                      ₹{quickViewProduct.originalPrice.toLocaleString()}
-                    </span>
-                    <span className="text-xs text-[#1E7E34] font-medium">
-                      Save ₹{(quickViewProduct.originalPrice - quickViewProduct.price).toLocaleString()}
-                    </span>
+                    {quickViewProduct.originalPrice > quickViewProduct.price && (
+                      <>
+                        <span className="text-sm text-[#78746F] line-through">
+                          ₹{quickViewProduct.originalPrice.toLocaleString()}
+                        </span>
+                        <span className="text-xs text-[#1E7E34] font-medium">
+                          Save ₹{(quickViewProduct.originalPrice - quickViewProduct.price).toLocaleString()}
+                        </span>
+                      </>
+                    )}
                   </div>
 
-                  <p className="text-xs text-[#78746F] leading-relaxed">
-                    {quickViewProduct.description}
-                  </p>
-
-                  {/* Product Details */}
-                  <div className="mt-4 pt-4 border-t border-[#F0ECE6] space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-[#78746F]">Plating:</span>
-                      <span className="font-medium text-[#1F1E1D]">{quickViewProduct.plating}</span>
+                  <div className="space-y-2 border-t border-[#F0ECE6] pt-3 text-xs text-[#78746F]">
+                    <div>
+                      <span className="font-semibold text-[#1F1E1D]">Plating: </span>
+                      {quickViewProduct.plating}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#78746F]">Stones:</span>
-                      <span className="font-medium text-[#1F1E1D]">{quickViewProduct.stones}</span>
+                    <div>
+                      <span className="font-semibold text-[#1F1E1D]">Stones & Craft: </span>
+                      {quickViewProduct.stones}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#78746F]">Packaging:</span>
-                      <span className="font-medium text-[#1F1E1D]">Velvet Keepsake Box Included</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#78746F]">Shipping:</span>
-                      <span className="font-medium text-[#1E7E34]">{quickViewProduct.shippingStatus}</span>
+                    <div className="pt-2 text-xs leading-relaxed text-[#4A4744]">
+                      {quickViewProduct.description}
                     </div>
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="pt-4 space-y-2">
                   <button
                     onClick={() => {
                       addToCart(quickViewProduct);
                       setQuickViewProduct(null);
                     }}
-                    className="btn-bronze w-full py-3 text-xs rounded-[2px]"
+                    className="btn-bronze w-full py-3 text-xs rounded-[2px] cursor-pointer"
                   >
                     ADD TO CURATED BOX
                   </button>
@@ -1501,9 +1567,9 @@ export default function App() {
                       handleOrderWhatsApp(quickViewProduct.name, quickViewProduct.price);
                       setQuickViewProduct(null);
                     }}
-                    className="w-full bg-[#1FA855] hover:bg-[#1B944B] text-white py-3 text-xs font-semibold rounded-[2px] transition-colors flex items-center justify-center gap-2"
+                    className="w-full bg-[#1FA855] hover:bg-[#1B944B] text-white py-3 text-xs font-semibold rounded-[2px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    ORDER ON WHATSAPP
+                    <span>ORDER ON WHATSAPP DIRECTLY</span>
                   </button>
                 </div>
               </div>
@@ -1512,200 +1578,175 @@ export default function App() {
         </div>
       )}
 
-      {/* ── 15. Slide-Out Curated Box / Cart Drawer (Mihira Jewels style) ────── */}
+      {/* 10. Cart Slide-out Drawer */}
       {isCartOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between border-l border-[#EAE5DC] animate-in slide-in-from-right duration-300">
-            {/* Drawer Header */}
-            <div className="p-5 border-b border-[#F0ECE6] flex items-center justify-between">
-              <div>
-                <h3 className="font-serif-luxury text-xl text-[#1F1E1D]">Your Curated Box</h3>
-                <span className="text-xs text-[#78746F]">
-                  {cart.length} unique {cart.length === 1 ? "design" : "designs"}
-                </span>
-              </div>
-              <button
-                onClick={() => setIsCartOpen(false)}
-                className="p-1 text-[#78746F] hover:text-[#1F1E1D]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Free Shipping Progress */}
-            <div className="bg-[#FAF8F5] px-5 py-3 border-b border-[#F0ECE6] text-xs">
-              {cartTotal >= 1499 ? (
-                <p className="text-[#1E7E34] font-medium flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" /> You've unlocked Free Express Shipping!
-                </p>
-              ) : (
-                <p className="text-[#4A4744]">
-                  Add <span className="font-bold text-[#1F1E1D]">₹{(1499 - cartTotal).toLocaleString()}</span> more for <span className="text-[#9E7D4B] font-semibold">Free Express Shipping</span>
-                </p>
-              )}
-            </div>
-
-            {/* Cart Items List */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4">
-              {cart.length === 0 ? (
-                <div className="text-center py-12 space-y-3">
-                  <ShoppingBag className="w-10 h-10 text-[#C8B89C] mx-auto stroke-[1.2]" />
-                  <p className="font-serif-luxury text-lg text-[#1F1E1D]">Your box is empty</p>
-                  <p className="text-xs text-[#78746F]">Explore our heirloom collection to curate your look.</p>
-                  <button
-                    onClick={() => {
-                      setIsCartOpen(false);
-                      document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    className="btn-bronze text-xs py-2 px-5 mt-2"
-                  >
-                    BROWSE PIECES
-                  </button>
+        <div className="fixed inset-0 z-50 overflow-hidden bg-black/50 backdrop-blur-xs">
+          <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col border-l border-[#EAE5DC]">
+              <div className="p-5 border-b border-[#F0ECE6] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-[#9E7D4B]" />
+                  <h3 className="font-serif-luxury text-lg text-[#1F1E1D] font-medium">
+                    Your Curated Box ({cartItemsCount})
+                  </h3>
                 </div>
-              ) : (
-                cart.map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="flex gap-4 pb-4 border-b border-[#F0ECE6] items-center"
-                  >
-                    <img
-                      src={resolveAsset(item.product.image)}
-                      alt={item.product.name}
-                      className="w-18 h-18 rounded-[2px] object-cover bg-[#FAF8F5] border border-[#EAE5DC]"
-                    />
-                    <div className="flex-1 text-left">
-                      <h4 className="font-serif-luxury text-sm font-medium text-[#1F1E1D] line-clamp-1">
-                        {item.product.name}
-                      </h4>
-                      <p className="text-xs text-[#9E7D4B] font-semibold mt-0.5">
-                        ₹{item.product.price.toLocaleString()}
-                      </p>
-                      {/* Quantity Controls */}
-                      <div className="flex items-center gap-2 mt-2">
-                        <button
-                          onClick={() => updateCartQuantity(item.product.id, -1)}
-                          className="w-6 h-6 border border-[#EAE5DC] rounded-xs flex items-center justify-center text-[#78746F] hover:bg-[#FAF8F5]"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-xs font-semibold text-[#1F1E1D] w-5 text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateCartQuantity(item.product.id, 1)}
-                          className="w-6 h-6 border border-[#EAE5DC] rounded-xs flex items-center justify-center text-[#78746F] hover:bg-[#FAF8F5]"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Cart Footer Checkout via WhatsApp */}
-            {cart.length > 0 && (
-              <div className="p-5 border-t border-[#F0ECE6] bg-[#FAF8F5] space-y-3">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-xs text-[#78746F] uppercase tracking-wider">Subtotal</span>
-                  <span className="text-lg font-bold text-[#1F1E1D]">₹{cartTotal.toLocaleString()}</span>
-                </div>
-                <p className="text-[0.68rem] text-[#78746F] text-left">
-                  Includes complimentary velvet keepsake box & blessing card.
-                </p>
                 <button
-                  onClick={handleCheckoutWhatsAppCart}
-                  className="w-full bg-[#1FA855] hover:bg-[#1B944B] text-white py-3.5 text-xs font-semibold rounded-[2px] transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  onClick={() => setIsCartOpen(false)}
+                  className="p-1 text-[#78746F] hover:text-[#1F1E1D] cursor-pointer"
                 >
-                  <span>ORDER VIA WHATSAPP (₹{cartTotal.toLocaleString()})</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* ── 16. Slide-Out Wishlist Drawer ──────────────────────────────────── */}
-      {isWishlistOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between border-l border-[#EAE5DC] animate-in slide-in-from-right duration-300">
-            <div className="p-5 border-b border-[#F0ECE6] flex items-center justify-between">
-              <div>
-                <h3 className="font-serif-luxury text-xl text-[#1F1E1D]">Saved Pieces</h3>
-                <span className="text-xs text-[#78746F]">
-                  {wishlist.length} saved for your wishlist
-                </span>
-              </div>
-              <button
-                onClick={() => setIsWishlistOpen(false)}
-                className="p-1 text-[#78746F] hover:text-[#1F1E1D]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-5 space-y-4">
-              {wishlist.length === 0 ? (
-                <div className="text-center py-12 space-y-3">
-                  <Heart className="w-10 h-10 text-[#C8B89C] mx-auto stroke-[1.2]" />
-                  <p className="font-serif-luxury text-lg text-[#1F1E1D]">No pieces saved yet</p>
-                  <p className="text-xs text-[#78746F]">Tap the heart icon on any design to save it here.</p>
-                </div>
-              ) : (
-                CATALOG_PRODUCTS.filter((p) => wishlist.includes(p.id)).map((p) => (
-                  <div key={p.id} className="flex gap-4 pb-4 border-b border-[#F0ECE6] items-center">
-                    <img
-                      src={resolveAsset(p.image)}
-                      alt={p.name}
-                      className="w-16 h-16 rounded-[2px] object-cover bg-[#FAF8F5] border border-[#EAE5DC]"
-                    />
-                    <div className="flex-1 text-left">
-                      <h4 className="font-serif-luxury text-xs font-medium text-[#1F1E1D] line-clamp-1">
-                        {p.name}
-                      </h4>
-                      <p className="text-xs text-[#9E7D4B] font-semibold mt-0.5">
-                        ₹{p.price.toLocaleString()}
-                      </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <button
-                          onClick={() => {
-                            addToCart(p);
-                            setIsWishlistOpen(false);
-                          }}
-                          className="btn-bronze text-[0.62rem] py-1 px-3"
-                        >
-                          MOVE TO BOX
-                        </button>
-                        <button
-                          onClick={() => toggleWishlist(p.id)}
-                          className="text-[0.62rem] text-[#78746F] hover:text-red-600 underline"
-                        >
-                          Remove
-                        </button>
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {cart.length === 0 ? (
+                  <div className="text-center py-12 space-y-3">
+                    <ShoppingBag className="w-12 h-12 text-[#EAE5DC] mx-auto stroke-[1]" />
+                    <p className="text-sm text-[#78746F]">Your curated box is currently empty.</p>
+                    <button
+                      onClick={() => setIsCartOpen(false)}
+                      className="btn-bronze text-xs py-2 px-4 cursor-pointer"
+                    >
+                      EXPLORE CATALOG
+                    </button>
+                  </div>
+                ) : (
+                  cart.map((item) => (
+                    <div
+                      key={item.product.id}
+                      className="flex gap-4 pb-4 border-b border-[#FAF8F5] text-left"
+                    >
+                      <img
+                        src={resolveAsset(item.product.image)}
+                        alt={item.product.name}
+                        className="w-16 h-20 object-cover rounded-[2px] border border-[#EAE5DC]"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-medium text-[#1F1E1D] line-clamp-1">
+                          {item.product.name}
+                        </h4>
+                        <span className="text-[0.68rem] text-[#78746F] block mt-0.5">
+                          {item.product.categoryLabel}
+                        </span>
+                        <div className="flex items-center justify-between mt-3">
+                          <span className="text-xs font-semibold text-[#1F1E1D]">
+                            ₹{(item.product.price * item.quantity).toLocaleString()}
+                          </span>
+                          <div className="flex items-center border border-[#EAE5DC] rounded-[2px]">
+                            <button
+                              onClick={() => updateCartQuantity(item.product.id, -1)}
+                              className="px-2 py-0.5 text-xs text-[#78746F] hover:bg-[#FAF8F5] cursor-pointer"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="px-2 text-xs font-medium">{item.quantity}</span>
+                            <button
+                              onClick={() => updateCartQuantity(item.product.id, 1)}
+                              className="px-2 py-0.5 text-xs text-[#78746F] hover:bg-[#FAF8F5] cursor-pointer"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
+                  ))
+                )}
+              </div>
+
+              {cart.length > 0 && (
+                <div className="p-5 border-t border-[#F0ECE6] space-y-3 bg-[#FAF8F5]">
+                  <div className="flex justify-between text-sm font-medium">
+                    <span className="text-[#4A4744]">Subtotal</span>
+                    <span className="font-serif-luxury text-base font-semibold text-[#1F1E1D]">
+                      ₹{cartTotal.toLocaleString()}
+                    </span>
                   </div>
-                ))
+                  <p className="text-[0.68rem] text-[#78746F]">
+                    Shipping and complimentary velvet gift box included across Maharashtra.
+                  </p>
+                  <button
+                    onClick={handleCheckoutCartWhatsApp}
+                    className="w-full bg-[#1FA855] hover:bg-[#1B944B] text-white py-3 text-xs font-semibold rounded-[2px] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <span>CHECKOUT ON WHATSAPP</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Floating Mobile WhatsApp Order Button ────────────────────────────── */}
-      {!isMobileMenuOpen && (
-        <a
-          href="https://wa.me/919156131162?text=Hello%20Shambhavi%20Creations%2C%20I%20am%20interested%20in%20ordering%20handcrafted%20jewellery"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-5 right-4 z-40 lg:hidden flex items-center gap-2 bg-[#1FA855] text-white px-3.5 py-2.5 rounded-full shadow-lg font-medium text-xs hover:bg-[#1B944B] transition-transform active:scale-95 cursor-pointer"
-          aria-label="Chat on WhatsApp"
-        >
-          <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-          <span className="font-semibold tracking-wide">WhatsApp Us</span>
-        </a>
+      {/* 11. Wishlist Slide-out Drawer */}
+      {isWishlistOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden bg-black/50 backdrop-blur-xs">
+          <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col border-l border-[#EAE5DC]">
+              <div className="p-5 border-b border-[#F0ECE6] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-[#9C2B2B]" />
+                  <h3 className="font-serif-luxury text-lg text-[#1F1E1D] font-medium">
+                    Your Wishlist ({wishlist.length})
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setIsWishlistOpen(false)}
+                  className="p-1 text-[#78746F] hover:text-[#1F1E1D] cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {wishlist.length === 0 ? (
+                  <div className="text-center py-12 space-y-3">
+                    <Heart className="w-12 h-12 text-[#EAE5DC] mx-auto stroke-[1]" />
+                    <p className="text-sm text-[#78746F]">Your wishlist is currently empty.</p>
+                  </div>
+                ) : (
+                  products
+                    .filter((p) => wishlist.includes(p.id))
+                    .map((p) => (
+                      <div
+                        key={p.id}
+                        className="flex gap-4 pb-4 border-b border-[#FAF8F5] text-left items-center"
+                      >
+                        <img
+                          src={resolveAsset(p.image)}
+                          alt={p.name}
+                          className="w-14 h-18 object-cover rounded-[2px] border border-[#EAE5DC]"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-medium text-[#1F1E1D] line-clamp-1">{p.name}</h4>
+                          <span className="text-xs font-semibold text-[#1F1E1D] mt-1 block">
+                            ₹{p.price.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => {
+                              addToCart(p);
+                              toggleWishlist(p.id);
+                            }}
+                            className="px-2.5 py-1 bg-[#1F1E1D] text-white text-[11px] font-medium rounded-[2px] hover:bg-[#9E7D4B] transition-colors cursor-pointer"
+                          >
+                            Add to Cart
+                          </button>
+                          <button
+                            onClick={() => toggleWishlist(p.id)}
+                            className="text-[10px] text-[#78746F] hover:text-[#9C2B2B] text-center cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
