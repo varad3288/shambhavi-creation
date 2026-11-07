@@ -648,15 +648,13 @@ export default function App() {
             {/* Laptop View Categories Trigger Button */}
             <button
               onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-              className={`hover:text-[#9E7D4B] transition-colors flex items-center gap-1.5 text-[0.82rem] font-medium cursor-pointer py-1.5 px-2 rounded-sm ${
-                isCategoriesOpen ? "text-[#9E7D4B] bg-[#FAF8F5]" : "text-[#4A4744]"
-              }`}
+              className={`hover:text-[#9E7D4B] transition-colors flex items-center gap-1.5 text-[0.82rem] font-medium cursor-pointer py-1.5 px-2 rounded-sm ${isCategoriesOpen ? "text-[#9E7D4B] bg-[#FAF8F5]" : "text-[#4A4744]"
+                }`}
             >
               <span>Categories</span>
               <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                  isCategoriesOpen ? "rotate-180 text-[#9E7D4B]" : ""
-                }`}
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${isCategoriesOpen ? "rotate-180 text-[#9E7D4B]" : ""
+                  }`}
               />
             </button>
 
@@ -757,8 +755,8 @@ export default function App() {
                     cat.id === "under-1000"
                       ? p.price <= 1000
                       : cat.id === "festive"
-                      ? p.category === "festive" || p.category === "polki"
-                      : p.category === cat.id
+                        ? p.category === "festive" || p.category === "polki"
+                        : p.category === cat.id
                   ).length;
 
                   return (
@@ -840,9 +838,8 @@ export default function App() {
                     </span>
                   </div>
                   <ChevronDown
-                    className={`w-3.5 h-3.5 text-[#9E7D4B] transition-transform duration-200 ${
-                      isMobileCategoriesOpen ? "rotate-180" : ""
-                    }`}
+                    className={`w-3.5 h-3.5 text-[#9E7D4B] transition-transform duration-200 ${isMobileCategoriesOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
 
@@ -853,8 +850,8 @@ export default function App() {
                         cat.id === "under-1000"
                           ? p.price <= 1000
                           : cat.id === "festive"
-                          ? p.category === "festive" || p.category === "polki"
-                          : p.category === cat.id
+                            ? p.category === "festive" || p.category === "polki"
+                            : p.category === cat.id
                       ).length;
                       return (
                         <button
@@ -1057,11 +1054,10 @@ export default function App() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 shrink-0 border cursor-pointer ${
-                    isActive
+                  className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 shrink-0 border cursor-pointer ${isActive
                       ? "bg-[#1F1E1D] text-white border-[#1F1E1D] shadow-xs"
                       : "bg-white text-[#4A4744] border-[#EAE5DC] hover:border-[#9E7D4B] hover:text-[#9E7D4B]"
-                  }`}
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -1120,11 +1116,10 @@ export default function App() {
                         aria-label="Save to wishlist"
                       >
                         <Heart
-                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${
-                            isWishlisted
+                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${isWishlisted
                               ? "fill-[#9C2B2B] text-[#9C2B2B] scale-110"
                               : "text-[#1E2321] stroke-[1.75]"
-                          }`}
+                            }`}
                         />
                       </button>
 
@@ -1364,9 +1359,9 @@ export default function App() {
                   className="flex items-center gap-2 text-[#4A4744] hover:text-[#9E7D4B] transition-colors"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                   </svg>
                   <span>Instagram Profile</span>
                 </a>
