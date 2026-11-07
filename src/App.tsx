@@ -32,7 +32,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   tagline: "Fine Jewellery & Bridal Atelier",
   city: "",
   phone: "919156131162",
-  ownerName: "Pallavi",
+  ownerName: "Pallavi / Shambhavi",
   instagramUrl: "https://www.instagram.com/shambhavii_creations/",
   announcementText: "✨ FESTIVE WEDDING ATELIER — COMPLIMENTARY VELVET BOX PACKAGING ON ALL ORDERS ✨",
 };
@@ -400,6 +400,9 @@ export default function App() {
         if (parsed.city && (parsed.city.includes("Sambhajinagar") || parsed.city.includes("CSN"))) {
           parsed.city = "";
         }
+        if (parsed.ownerName === "Pallavi") {
+          parsed.ownerName = "Pallavi / Shambhavi";
+        }
         return parsed;
       }
     } catch (e) {
@@ -675,7 +678,7 @@ export default function App() {
               className="text-[#1FA855] font-semibold flex items-center gap-1.5 hover:underline"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#1FA855] animate-pulse" />
-              WhatsApp
+              Chat on WhatsApp
             </a>
           </nav>
 
@@ -894,7 +897,7 @@ export default function App() {
                   className="w-full py-2.5 bg-[#1FA855] hover:bg-[#1B944B] text-white rounded-[2px] text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-colors"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  <span>Chat directly with {storeSettings.ownerName}</span>
+                  <span>Chat with {storeSettings.ownerName || "Pallavi / Shambhavi"}</span>
                 </a>
               </div>
             </nav>

@@ -805,15 +805,36 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#1F1E1D] block mb-1">
-                    Owner / Contact Person Name
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-[#1F1E1D]">
+                      Owner / Contact Person Name
+                    </label>
+                    <div className="flex items-center gap-1">
+                      {["Pallavi", "Shambhavi", "Pallavi / Shambhavi"].map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setLocalSettings({ ...localSettings, ownerName: n })}
+                          className={`text-[0.62rem] px-1.5 py-0.5 rounded-[2px] border transition-colors cursor-pointer ${
+                            localSettings.ownerName === n
+                              ? "bg-[#9E7D4B] text-white border-[#9E7D4B]"
+                              : "bg-white text-[#78746F] border-[#EAE5DC] hover:border-[#9E7D4B]"
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <input
                     type="text"
                     value={localSettings.ownerName}
                     onChange={(e) => setLocalSettings({ ...localSettings, ownerName: e.target.value })}
                     className="w-full bg-[#FAF8F5] border border-[#EAE5DC] px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-[#9E7D4B]"
                   />
+                  <span className="text-[0.68rem] text-[#78746F] mt-1 block">
+                    Customer chat button displays: &quot;Chat with {localSettings.ownerName || "Pallavi / Shambhavi"}&quot;
+                  </span>
                 </div>
               </div>
 
