@@ -381,6 +381,8 @@ const CURATED_PRODUCTS: Product[] = [
   },
 ];
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export default function App() {
   const [currentView, setCurrentView] = useState<"storefront" | "admin">(() => {
     return window.location.hash === "#admin" ? "admin" : "storefront";
@@ -449,10 +451,15 @@ export default function App() {
   // Pagination state: clean initial view of 8 items
   const [visibleCount, setVisibleCount] = useState<number>(8);
 
-  // Reset pagination when filter or search changes
-  useEffect(() => {
+  const handleSelectTab = (tabId: string) => {
+    setActiveTab(tabId);
     setVisibleCount(8);
-  }, [activeTab, searchQuery]);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setVisibleCount(8);
+  };
 
   // Filter products based on selected tab & search query
   const filteredProducts = useMemo(() => {
@@ -896,14 +903,14 @@ export default function App() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search earrings, chokers, rings, kundan, polki..."
                 className="w-full bg-transparent text-sm text-[#1F1E1D] placeholder-[#78746F] focus:outline-none"
                 autoFocus
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => handleSearchChange("")}
                   className="text-xs text-[#78746F] hover:text-[#1F1E1D] cursor-pointer"
                 >
                   Clear
@@ -1302,170 +1309,90 @@ export default function App() {
         </div>
       </section>
 
-      {/* 8. Luxury Footer with All Functional Redirects */}
-      <footer className="bg-white text-[#1F1E1D] pt-16 pb-12">
+      {/* 8. Minimized Clean Luxury Footer */}
+      <footer className="bg-white text-[#1F1E1D] pt-12 pb-8 border-t border-[#F0ECE6]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#F0ECE6] text-left">
-            {/* Brand Col */}
-            <div className="lg:col-span-2 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10 border-b border-[#F0ECE6] text-left">
+            {/* Brand Col (4 cols) */}
+            <div className="md:col-span-4 space-y-3">
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 className="font-serif-luxury font-semibold text-2xl tracking-[0.06em] text-[#1F1E1D] block cursor-pointer text-left"
               >
                 {storeSettings.storeName.toUpperCase()}
               </button>
-              <span className="text-[0.62rem] uppercase tracking-[0.24em] text-[#9E7D4B] font-semibold block -mt-2">
+              <span className="text-[0.62rem] uppercase tracking-[0.24em] text-[#9E7D4B] font-semibold block">
                 {storeSettings.tagline.toUpperCase()}
               </span>
               <p className="text-xs text-[#78746F] max-w-sm leading-relaxed">
-                Timeless imitation jewellery, custom bridal designs, and authentic handcrafted ornaments made with care in {storeSettings.city}.
+                Handcrafted imitation jewellery, bridal collections, and authentic ornaments from {storeSettings.city}.
               </p>
-              {/* Social icons */}
-              <div className="flex items-center gap-4 text-[#1F1E1D] pt-2">
+            </div>
+
+            {/* All Categories Column (5 cols) */}
+            <div className="md:col-span-5 space-y-3">
+              <h4 className="text-xs font-semibold text-[#1F1E1D] uppercase tracking-wider">
+                All Collections & Categories
+              </h4>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-[#78746F]">
+                {categories.filter((c) => c.id !== "all").map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      handleSelectTab(cat.id);
+                      const el = document.getElementById("catalog");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-[#9E7D4B] transition-colors text-left cursor-pointer truncate"
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Social & Connect Column (3 cols) */}
+            <div className="md:col-span-3 space-y-3">
+              <h4 className="text-xs font-semibold text-[#1F1E1D] uppercase tracking-wider">
+                Connect With Us
+              </h4>
+              <div className="flex flex-col space-y-2.5 text-xs">
                 <a
                   href={storeSettings.instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-[#9E7D4B] transition-colors"
-                  aria-label="Instagram"
+                  className="flex items-center gap-2 text-[#4A4744] hover:text-[#9E7D4B] transition-colors"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
                     <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
                   </svg>
+                  <span>Instagram Profile</span>
                 </a>
                 <a
                   href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I would like to inquire about your jewellery collections.")}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-[#1FA855] transition-colors"
-                  aria-label="WhatsApp"
+                  className="flex items-center gap-2 text-[#1FA855] hover:underline transition-colors font-medium"
                 >
-                  <span className="text-xs font-semibold bg-[#1FA855]/10 text-[#1FA855] px-2 py-0.5 rounded-[2px]">WhatsApp</span>
+                  <span className="w-2 h-2 rounded-full bg-[#1FA855] animate-pulse" />
+                  <span>WhatsApp Inquiries</span>
                 </a>
                 <button
                   onClick={handleShareWebsite}
-                  className="hover:text-[#9E7D4B] transition-colors cursor-pointer"
-                  aria-label="Share Store Link"
-                  title="Share Store Link"
+                  className="flex items-center gap-2 text-[#4A4744] hover:text-[#9E7D4B] transition-colors cursor-pointer text-left"
                 >
                   <Share2 className="w-4 h-4" />
+                  <span>Share Store Link</span>
                 </button>
               </div>
-            </div>
-
-            {/* Quick Links Column */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-[#1F1E1D] uppercase tracking-wider">Shop Collections</h4>
-              <ul className="space-y-2 text-xs text-[#78746F]">
-                {categories.filter((c) => c.id !== "all").slice(0, 5).map((cat) => (
-                  <li key={cat.id}>
-                    <button
-                      onClick={() => {
-                        setActiveTab(cat.id);
-                        const el = document.getElementById("catalog");
-                        if (el) el.scrollIntoView({ behavior: "smooth" });
-                      }}
-                      className="hover:text-[#1F1E1D] cursor-pointer"
-                    >
-                      {cat.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* About Column */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-[#1F1E1D] uppercase tracking-wider">About</h4>
-              <ul className="space-y-2 text-xs text-[#78746F]">
-                <li>
-                  <button
-                    onClick={() => {
-                      setActiveTab("all");
-                      const el = document.getElementById("catalog");
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    className="hover:text-[#1F1E1D] cursor-pointer"
-                  >
-                    Atelier Handcrafted Catalog
-                  </button>
-                </li>
-                <li>
-                  <a
-                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I want to know more about your Quality Guarantee and materials.")}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-[#1F1E1D]"
-                  >
-                    Quality Guarantee
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I would like to book a bridal jewellery design consultation.")}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-[#1F1E1D]"
-                  >
-                    Design Consultation
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Customer Care Column */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-[#1F1E1D] uppercase tracking-wider">Customer Care</h4>
-              <ul className="space-y-2 text-xs text-[#78746F]">
-                <li>
-                  <a
-                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I would like to track my order.")}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-[#1F1E1D]"
-                  >
-                    Track Order (WhatsApp)
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I have an inquiry regarding your returns and exchange policy.")}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-[#1F1E1D]"
-                  >
-                    Returns & Exchanges
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, could you please help me with the Bangle & Ring Size Guide?")}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-[#1F1E1D]"
-                  >
-                    Bangle Size Guide
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href={formatWhatsAppLink(storeSettings.phone, "Hello Shambhavi Creations, I need instant customer support.")}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-[#1F1E1D]"
-                  >
-                    Instant WhatsApp Support
-                  </a>
-                </li>
-              </ul>
             </div>
           </div>
 
           {/* Bottom Copyright & Admin Access */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[0.72rem] text-[#78746F] gap-2">
-            <p>© {new Date().getFullYear()} {storeSettings.storeName}. All rights reserved.</p>
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-[0.72rem] text-[#78746F] gap-2">
+            <p>© {CURRENT_YEAR} {storeSettings.storeName}. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => {
