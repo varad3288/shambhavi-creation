@@ -1390,25 +1390,12 @@ export default function App() {
             </div>
           </div>
 
-          {/* Bottom Copyright & Admin Access */}
+          {/* Bottom Copyright */}
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-[0.72rem] text-[#78746F] gap-2">
             <p>© {CURRENT_YEAR} {storeSettings.storeName}. All rights reserved.</p>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => {
-                  setCurrentView("admin");
-                  window.location.hash = "#admin";
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                className="hover:text-[#9E7D4B] transition-colors underline underline-offset-4 cursor-pointer font-medium"
-              >
-                Owner Admin Access ↗
-              </button>
-              <span>•</span>
-              <p className="font-serif-luxury italic text-[#9E7D4B]">
-                Handcrafted in {storeSettings.city} with ♡
-              </p>
-            </div>
+            <p className="font-serif-luxury italic text-[#9E7D4B]">
+              Handcrafted in {storeSettings.city} with ♡
+            </p>
           </div>
         </div>
       </footer>
