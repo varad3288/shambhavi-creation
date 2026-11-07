@@ -134,7 +134,7 @@ export function formatINR(val: number): string {
 export function buildWhatsAppLink(productName: string, price: number, refCode?: string): string {
   const code = refCode ? ` [Item: ${refCode}]` : "";
   const message = encodeURIComponent(
-    `Namaste Shambhavi Creation! 🙏 I would like to order: *${productName}* (${formatINR(price)})${code}. Please share payment details and delivery estimate for Chh. Sambhajinagar/courier.`
+    `Namaste Shambhavi Creation! 🙏 I would like to order: *${productName}* (${formatINR(price)})${code}. Please share payment details and courier delivery estimate.`
   );
   return `https://wa.me/919156131162?text=${message}`;
 }

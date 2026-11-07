@@ -102,7 +102,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Settings local state for saving
-  const [localSettings, setLocalSettings] = useState<StoreSettings>({ ...storeSettings });
+  const [localSettings, setLocalSettings] = useState<StoreSettings>(() => {
+    const clean = { ...storeSettings };
+    if (clean.city && (clean.city.includes("Sambhajinagar") || clean.city.includes("CSN"))) {
+      clean.city = "";
+    }
+    if (clean.tagline && (clean.tagline.includes("Sambhajinagar") || clean.tagline.includes("CSN"))) {
+      clean.tagline = "Fine Jewellery & Bridal Atelier";
+    }
+    return clean;
+  });
   const [settingsSavedToast, setSettingsSavedToast] = useState(false);
 
   // Category Add Modal state
@@ -157,7 +166,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       product: "Classic 24K Gold Polish Patli Tode Bangles (Set of 6)",
       amount: "₹1,299",
       time: "Yesterday",
-      status: "Dispatched (Chh. Sambhajinagar)",
+      status: "Dispatched (Courier)",
     },
   ]);
 
@@ -181,7 +190,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       image: "/photos/shambhavi_signature_wati_haar.jpg",
       plating: "Gold Plated Finish",
       stones: "Traditional Handcrafted Wati",
-      description: "Fine handcrafted piece made with care in Chh. Sambhajinagar.",
+      description: "Fine handcrafted piece made with care.",
       shippingStatus: "Ready to Ship",
       badge: { text: "Original Click", variant: "new" },
     });
@@ -342,7 +351,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 {storeSettings.storeName}
               </span>
               <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[#9E7D4B] font-semibold">
-                Owner Portal • {storeSettings.city}
+                Owner Portal{storeSettings.city ? ` • ${storeSettings.city}` : " • Store & Catalog Manager"}
               </span>
             </div>
           </div>

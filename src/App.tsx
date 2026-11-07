@@ -29,8 +29,8 @@ interface CartItem {
 
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   storeName: "Shambhavi Creation",
-  tagline: "Fine Jewellery • Chh. Sambhajinagar",
-  city: "Chh. Sambhajinagar, Maharashtra",
+  tagline: "Fine Jewellery & Bridal Atelier",
+  city: "",
   phone: "919156131162",
   ownerName: "Pallavi",
   instagramUrl: "https://www.instagram.com/shambhavii_creations/",
@@ -392,7 +392,16 @@ export default function App() {
   const [storeSettings, setStoreSettings] = useState<StoreSettings>(() => {
     try {
       const saved = localStorage.getItem("shambhavi_store_settings_v1");
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.tagline && (parsed.tagline.includes("Sambhajinagar") || parsed.tagline.includes("CSN"))) {
+          parsed.tagline = "Fine Jewellery & Bridal Atelier";
+        }
+        if (parsed.city && (parsed.city.includes("Sambhajinagar") || parsed.city.includes("CSN"))) {
+          parsed.city = "";
+        }
+        return parsed;
+      }
     } catch (e) {
       console.error("Error reading store settings from localStorage", e);
     }
@@ -936,7 +945,7 @@ export default function App() {
               </h1>
 
               <p className="text-[#78746F] text-sm sm:text-base max-w-md leading-relaxed font-light">
-                Artisanal Kundan polki, South Indian temple jewellery, and elegant daily wear. Handcrafted in {storeSettings.city} with care.
+                Artisanal Kundan polki, South Indian temple jewellery, and elegant daily wear. Handcrafted with precision and care.
               </p>
 
               {/* Action Buttons */}
@@ -1037,7 +1046,7 @@ export default function App() {
                 {activeTab === "all" ? "All Handcrafted Pieces" : categories.find((c) => c.id === activeTab)?.label || "Selected Collection"} ({filteredProducts.length})
               </h2>
               <p className="text-xs sm:text-sm text-[#78746F] mt-1">
-                Handcrafted with care in {storeSettings.city}. Tap any piece for full details and WhatsApp ordering.
+                Handcrafted with devotion and care. Tap any piece for full details and WhatsApp ordering.
               </p>
             </div>
 
@@ -1320,7 +1329,7 @@ export default function App() {
                 {storeSettings.tagline.toUpperCase()}
               </span>
               <p className="text-xs text-[#78746F] max-w-sm leading-relaxed">
-                Handcrafted imitation jewellery, bridal collections, and authentic ornaments from {storeSettings.city}.
+                Handcrafted imitation jewellery, bridal collections, and authentic festive ornaments.
               </p>
             </div>
 
@@ -1389,7 +1398,7 @@ export default function App() {
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-[0.72rem] text-[#78746F] gap-2">
             <p>© {CURRENT_YEAR} {storeSettings.storeName}. All rights reserved.</p>
             <p className="font-serif-luxury italic text-[#9E7D4B]">
-              Handcrafted in {storeSettings.city} with ♡
+              Handcrafted with pride & devotion ♡
             </p>
           </div>
         </div>
