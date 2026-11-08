@@ -24,6 +24,7 @@ import { resolveAsset, formatWhatsAppLink } from "./utils";
 import {
   subscribeToFirestoreProducts,
   subscribeToFirestoreSettings,
+  autoSeedIfEmpty,
 } from "./firebase";
 
 interface CartItem {
@@ -451,6 +452,9 @@ export default function App() {
 
   // Real-time Firestore sync when Firebase is configured
   useEffect(() => {
+    // Attempt auto-seed if cloud database is currently unpopulated
+    autoSeedIfEmpty(CURATED_PRODUCTS, DEFAULT_CATEGORIES, DEFAULT_STORE_SETTINGS);
+
     const unsubProducts = subscribeToFirestoreProducts((liveProducts) => {
       if (liveProducts && liveProducts.length > 0) {
         setProducts(liveProducts);

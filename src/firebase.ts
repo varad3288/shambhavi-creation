@@ -27,12 +27,21 @@ export interface FirebaseConfig {
   appId: string;
 }
 
+export const DEFAULT_FIREBASE_CONFIG: FirebaseConfig = {
+  apiKey: "AIzaSyBiTqJs5fpMjlLU5bQH8ZUfDWHi3dvS-Hg",
+  authDomain: "shambhavi-a2220.firebaseapp.com",
+  projectId: "shambhavi-a2220",
+  storageBucket: "shambhavi-a2220.firebasestorage.app",
+  messagingSenderId: "717198386078",
+  appId: "1:717198386078:web:048fe024cbd5ae307d6c8f",
+};
+
 const STORAGE_KEY_FIREBASE_CONFIG = "shambhavi_firebase_config_v1";
 
 /**
- * Retrieve active Firebase config from either localStorage or Vite environment variables.
+ * Retrieve active Firebase config from either localStorage, Vite env, or default project.
  */
-export function getStoredFirebaseConfig(): FirebaseConfig | null {
+export function getStoredFirebaseConfig(): FirebaseConfig {
   try {
     const fromStorage = localStorage.getItem(STORAGE_KEY_FIREBASE_CONFIG);
     if (fromStorage) {
@@ -59,15 +68,22 @@ export function getStoredFirebaseConfig(): FirebaseConfig | null {
     return envConfig;
   }
 
-  return null;
+  // Active production Firebase project for Shambhavi
+  return DEFAULT_FIREBASE_CONFIG;
 }
 
 export function saveStoredFirebaseConfig(config: FirebaseConfig) {
   localStorage.setItem(STORAGE_KEY_FIREBASE_CONFIG, JSON.stringify(config));
+  cachedApp = null;
+  cachedDb = null;
+  cachedStorage = null;
 }
 
 export function clearStoredFirebaseConfig() {
   localStorage.removeItem(STORAGE_KEY_FIREBASE_CONFIG);
+  cachedApp = null;
+  cachedDb = null;
+  cachedStorage = null;
 }
 
 let cachedApp: FirebaseApp | null = null;
@@ -75,30 +91,23 @@ let cachedDb: Firestore | null = null;
 let cachedStorage: FirebaseStorage | null = null;
 
 export function getFirebaseInstance(): {
-  app: FirebaseApp | null;
-  db: Firestore | null;
-  storage: FirebaseStorage | null;
+  app: FirebaseApp;
+  db: Firestore;
+  storage: FirebaseStorage;
 } {
   const config = getStoredFirebaseConfig();
-  if (!config) {
-    return { app: null, db: null, storage: null };
+
+  if (!cachedApp) {
+    cachedApp = getApps().length > 0 ? getApp() : initializeApp(config);
+  }
+  if (!cachedDb && cachedApp) {
+    cachedDb = getFirestore(cachedApp);
+  }
+  if (!cachedStorage && cachedApp) {
+    cachedStorage = getStorage(cachedApp);
   }
 
-  try {
-    if (!cachedApp) {
-      cachedApp = getApps().length > 0 ? getApp() : initializeApp(config);
-    }
-    if (!cachedDb && cachedApp) {
-      cachedDb = getFirestore(cachedApp);
-    }
-    if (!cachedStorage && cachedApp) {
-      cachedStorage = getStorage(cachedApp);
-    }
-    return { app: cachedApp, db: cachedDb, storage: cachedStorage };
-  } catch (err) {
-    console.warn("Failed to initialize Firebase instance:", err);
-    return { app: null, db: null, storage: null };
-  }
+  return { app: cachedApp!, db: cachedDb!, storage: cachedStorage! };
 }
 
 /**
@@ -111,11 +120,6 @@ export async function uploadProductImageToStorage(
   onProgress?: (percent: number) => void
 ): Promise<string> {
   const { storage } = getFirebaseInstance();
-  if (!storage) {
-    throw new Error(
-      "Firebase Storage is not configured. Please enter your Firebase project credentials in Admin Settings."
-    );
-  }
 
   const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
   const filePath = `${folder}/${Date.now()}_${cleanName}`;
@@ -154,59 +158,69 @@ export function subscribeToFirestoreProducts(
   onUpdate: (products: Product[]) => void,
   onError?: (err: Error) => void
 ): () => void {
-  const { db } = getFirebaseInstance();
-  if (!db) return () => {};
+  try {
+    const { db } = getFirebaseInstance();
+    const colRef = collection(db, "products");
 
-  const colRef = collection(db, "products");
-  return onSnapshot(
-    colRef,
-    (snapshot) => {
-      const items: Product[] = [];
-      snapshot.forEach((docSnap) => {
-        items.push({ ...(docSnap.data() as Product), id: docSnap.id });
-      });
-      if (items.length > 0) {
-        onUpdate(items);
+    return onSnapshot(
+      colRef,
+      (snapshot) => {
+        const items: Product[] = [];
+        snapshot.forEach((docSnap) => {
+          items.push({ ...(docSnap.data() as Product), id: docSnap.id });
+        });
+        if (items.length > 0) {
+          onUpdate(items);
+        }
+      },
+      (err) => {
+        console.warn("Firestore products listener note:", err);
+        if (onError) onError(err);
       }
-    },
-    (err) => {
-      console.warn("Firestore products subscription error:", err);
-      if (onError) onError(err);
-    }
-  );
+    );
+  } catch (err: any) {
+    console.warn("Could not start Firestore products subscription:", err);
+    return () => {};
+  }
 }
 
 /**
  * Save or update a product in Firestore.
  */
 export async function syncProductToFirestore(product: Product): Promise<void> {
-  const { db } = getFirebaseInstance();
-  if (!db) return;
-
-  const docRef = doc(db, "products", product.id);
-  await setDoc(docRef, product, { merge: true });
+  try {
+    const { db } = getFirebaseInstance();
+    const docRef = doc(db, "products", product.id);
+    await setDoc(docRef, product, { merge: true });
+  } catch (err) {
+    console.warn("Firestore product save note:", err);
+  }
 }
 
 /**
  * Delete a product from Firestore.
  */
 export async function removeProductFromFirestore(productId: string): Promise<void> {
-  const { db } = getFirebaseInstance();
-  if (!db) return;
-
-  const docRef = doc(db, "products", productId);
-  await deleteDoc(docRef);
+  try {
+    const { db } = getFirebaseInstance();
+    const docRef = doc(db, "products", productId);
+    await deleteDoc(docRef);
+  } catch (err) {
+    console.warn("Firestore product delete note:", err);
+  }
 }
 
 /**
  * Save Store Settings to Firestore.
  */
 export async function syncStoreSettingsToFirestore(settings: StoreSettings): Promise<void> {
-  const { db } = getFirebaseInstance();
-  if (!db) return;
-
-  const docRef = doc(db, "settings", "store_config");
-  await setDoc(docRef, settings, { merge: true });
+  try {
+    const { db } = getFirebaseInstance();
+    const docRef = doc(db, "settings", "store_config");
+    await setDoc(docRef, settings, { merge: true });
+  } catch (err) {
+    console.warn("Firestore settings save note:", err);
+  }
 }
 
 /**
@@ -215,15 +229,18 @@ export async function syncStoreSettingsToFirestore(settings: StoreSettings): Pro
 export function subscribeToFirestoreSettings(
   onUpdate: (settings: StoreSettings) => void
 ): () => void {
-  const { db } = getFirebaseInstance();
-  if (!db) return () => {};
-
-  const docRef = doc(db, "settings", "store_config");
-  return onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      onUpdate(docSnap.data() as StoreSettings);
-    }
-  });
+  try {
+    const { db } = getFirebaseInstance();
+    const docRef = doc(db, "settings", "store_config");
+    return onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        onUpdate(docSnap.data() as StoreSettings);
+      }
+    });
+  } catch (err) {
+    console.warn("Could not start Firestore settings subscription:", err);
+    return () => {};
+  }
 }
 
 /**
@@ -235,7 +252,6 @@ export async function seedAllToFirestore(
   settings: StoreSettings
 ): Promise<number> {
   const { db } = getFirebaseInstance();
-  if (!db) throw new Error("Firebase DB not initialized");
 
   // Sync settings
   await syncStoreSettingsToFirestore(settings);
@@ -259,13 +275,30 @@ export async function seedAllToFirestore(
  * Check if Firestore has existing products
  */
 export async function countFirestoreProducts(): Promise<number> {
-  const { db } = getFirebaseInstance();
-  if (!db) return 0;
   try {
+    const { db } = getFirebaseInstance();
     const colRef = collection(db, "products");
     const snap = await getDocs(colRef);
     return snap.size;
   } catch (e) {
     return 0;
+  }
+}
+
+/**
+ * Auto-seed Firestore on initial launch if collection is empty
+ */
+export async function autoSeedIfEmpty(
+  products: Product[],
+  categories: CategoryItem[],
+  settings: StoreSettings
+) {
+  try {
+    const count = await countFirestoreProducts();
+    if (count === 0 && products.length > 0) {
+      await seedAllToFirestore(products, categories, settings);
+    }
+  } catch (err) {
+    console.warn("Auto-seed check note:", err);
   }
 }
