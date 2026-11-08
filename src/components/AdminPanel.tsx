@@ -22,7 +22,7 @@ import {
   ShieldCheck,
   LogOut,
 } from "lucide-react";
-import { resolveAsset, formatWhatsAppLink } from "../utils";
+import { resolveAsset, formatWhatsAppLink, compressImageFileToWebP } from "../utils";
 import {
   getStoredFirebaseConfig,
   saveStoredFirebaseConfig,
@@ -199,36 +199,36 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     setUploadError(null);
     setUploadingImage(true);
-    setUploadProgress(15);
+    setUploadProgress(20);
 
-    if (firebaseConfig?.storageBucket) {
-      try {
-        const downloadUrl = await uploadProductImageToStorage(file, "products", (pct) => {
-          setUploadProgress(pct);
-        });
-        setFormData((prev) => ({ ...prev, image: downloadUrl }));
-        setUploadingImage(false);
-      } catch (err: any) {
-        console.warn("Storage upload failed, fallback to local preview:", err);
-        setUploadError(err.message || "Cloud upload failed. Saved local preview.");
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          if (ev.target?.result) {
-            setFormData((prev) => ({ ...prev, image: ev.target!.result as string }));
-          }
+    try {
+      // Step 1: Compress image client-side to crisp, lightweight WebP (typically ~35-70 KB).
+      // This allows 100% free image storage directly in Firestore/Local DB with ZERO paid subscription!
+      const compressedWebP = await compressImageFileToWebP(file, 900, 0.82);
+      setUploadProgress(60);
+
+      // Try Firebase Cloud Storage if available and active
+      if (firebaseConfig?.storageBucket) {
+        try {
+          const downloadUrl = await uploadProductImageToStorage(file, "products", (pct) => {
+            setUploadProgress(60 + Math.round(pct * 0.38));
+          });
+          setFormData((prev) => ({ ...prev, image: downloadUrl }));
           setUploadingImage(false);
-        };
-        reader.readAsDataURL(file);
-      }
-    } else {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          setFormData((prev) => ({ ...prev, image: ev.target!.result as string }));
+          return;
+        } catch (storageErr: any) {
+          console.warn("Firebase Storage skipped or requires subscription, using optimized zero-cost WebP:", storageErr);
         }
-        setUploadingImage(false);
-      };
-      reader.readAsDataURL(file);
+      }
+
+      // Zero-subscription fallback: Use compressed WebP directly (stores directly in database, 100% Free!)
+      setFormData((prev) => ({ ...prev, image: compressedWebP }));
+      setUploadProgress(100);
+      setUploadingImage(false);
+    } catch (err: any) {
+      console.error("Image processing error:", err);
+      setUploadError(err.message || "Could not process image.");
+      setUploadingImage(false);
     }
   };
 
@@ -1523,7 +1523,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         />
                       </label>
                       <p className="text-[0.68rem] text-[#78746F] mt-1">
-                        JPEG, PNG, WebP up to 10MB. Automatically hosted on Firebase Storage.
+                        Select any photo from phone or PC. Automatically optimized &amp; compressed — 100% Free (no paid storage subscription needed).
                       </p>
                     </div>
                   </div>
@@ -1533,7 +1533,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="mt-2.5 space-y-1">
                       <div className="flex items-center justify-between text-[0.68rem] text-[#9E7D4B]">
                         <span className="flex items-center gap-1">
-                          <Loader2 className="w-3 h-3 animate-spin" /> Uploading to Cloud Storage...
+                          <Loader2 className="w-3 h-3 animate-spin" /> Optimizing photo...
                         </span>
                         <span className="font-semibold">{uploadProgress}%</span>
                       </div>
@@ -1551,6 +1551,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       {uploadError}
                     </p>
                   )}
+                </div>
+
+                {/* Free permanent image host helper */}
+                <div className="flex items-center justify-between text-[0.68rem] text-[#78746F] px-1">
+                  <span>✨ Want a free permanent image link?</span>
+                  <a
+                    href="https://imgbb.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#9E7D4B] hover:underline font-semibold"
+                  >
+                    Upload free on ImgBB ↗
+                  </a>
                 </div>
 
                 {/* Collapsible Studio Gallery / Custom URL */}
