@@ -21,6 +21,10 @@ import {
   type CategoryItem,
 } from "./components/AdminPanel";
 import { resolveAsset, formatWhatsAppLink } from "./utils";
+import {
+  subscribeToFirestoreProducts,
+  subscribeToFirestoreSettings,
+} from "./firebase";
 
 interface CartItem {
   product: Product;
@@ -443,6 +447,28 @@ export default function App() {
     };
     window.addEventListener("hashchange", handleHash);
     return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
+
+  // Real-time Firestore sync when Firebase is configured
+  useEffect(() => {
+    const unsubProducts = subscribeToFirestoreProducts((liveProducts) => {
+      if (liveProducts && liveProducts.length > 0) {
+        setProducts(liveProducts);
+        localStorage.setItem("shambhavi_products_catalog_v2", JSON.stringify(liveProducts));
+      }
+    });
+
+    const unsubSettings = subscribeToFirestoreSettings((liveSettings) => {
+      if (liveSettings) {
+        setStoreSettings((prev) => ({ ...prev, ...liveSettings }));
+        localStorage.setItem("shambhavi_store_settings_v1", JSON.stringify(liveSettings));
+      }
+    });
+
+    return () => {
+      unsubProducts();
+      unsubSettings();
+    };
   }, []);
 
   const [activeTab, setActiveTab] = useState<string>("all");

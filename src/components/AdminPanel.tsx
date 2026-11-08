@@ -12,8 +12,25 @@ import {
   Filter,
   CheckCircle2,
   Layers,
+  Cloud,
+  UploadCloud,
+  Loader2,
+  ExternalLink,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { resolveAsset, formatWhatsAppLink } from "../utils";
+import {
+  getStoredFirebaseConfig,
+  saveStoredFirebaseConfig,
+  clearStoredFirebaseConfig,
+  uploadProductImageToStorage,
+  syncProductToFirestore,
+  removeProductFromFirestore,
+  syncStoreSettingsToFirestore,
+  seedAllToFirestore,
+  type FirebaseConfig,
+} from "../firebase";
 
 export interface Product {
   id: string;
@@ -99,11 +116,61 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   categories,
   setCategories,
 }) => {
-  const [activeTab, setActiveTab] = useState<"products" | "categories" | "inquiries" | "settings">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "categories" | "inquiries" | "settings" | "firebase">("products");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Firebase State
+  const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig | null>(() => getStoredFirebaseConfig());
+  const [configSnippet, setConfigSnippet] = useState("");
+  const [firebaseStatusMsg, setFirebaseStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [isSyncingFirestore, setIsSyncingFirestore] = useState(false);
+
+  // Image Upload State for Modal
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadError(null);
+    setUploadingImage(true);
+    setUploadProgress(15);
+
+    if (firebaseConfig?.storageBucket) {
+      try {
+        const downloadUrl = await uploadProductImageToStorage(file, "products", (pct) => {
+          setUploadProgress(pct);
+        });
+        setFormData((prev) => ({ ...prev, image: downloadUrl }));
+        setUploadingImage(false);
+      } catch (err: any) {
+        console.warn("Storage upload failed, fallback to local preview:", err);
+        setUploadError(err.message || "Cloud upload failed. Saved local preview.");
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          if (ev.target?.result) {
+            setFormData((prev) => ({ ...prev, image: ev.target!.result as string }));
+          }
+          setUploadingImage(false);
+        };
+        reader.readAsDataURL(file);
+      }
+    } else {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          setFormData((prev) => ({ ...prev, image: ev.target!.result as string }));
+        }
+        setUploadingImage(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Settings local state for saving
   const [localSettings, setLocalSettings] = useState<StoreSettings>(() => {
@@ -217,6 +284,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         localStorage.setItem("shambhavi_products_catalog_v2", JSON.stringify(updated));
         return updated;
       });
+      removeProductFromFirestore(id).catch((err) =>
+        console.warn("Firestore delete warning (local delete succeeded):", err)
+      );
     }
   };
 
@@ -226,7 +296,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         if (p.id === id) {
           const nextStatus =
             p.shippingStatus === "Ready to Ship" ? "Sold Out" : "Ready to Ship";
-          return { ...p, shippingStatus: nextStatus };
+          const updatedItem = { ...p, shippingStatus: nextStatus };
+          syncProductToFirestore(updatedItem).catch((err) =>
+            console.warn("Firestore stock toggle warning:", err)
+          );
+          return updatedItem;
         }
         return p;
       });
@@ -243,21 +317,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const categoryLabel = matchedCat ? matchedCat.label : (formData.categoryLabel || "Jewellery");
 
     if (editingProduct) {
+      const updatedItem: Product = {
+        ...editingProduct,
+        ...formData,
+        categoryLabel,
+        price: Number(formData.price),
+        originalPrice: Number(formData.originalPrice || formData.price),
+      } as Product;
+
       setProducts((prev) => {
-        const updated = prev.map((p) =>
-          p.id === editingProduct.id
-            ? ({
-                ...p,
-                ...formData,
-                categoryLabel,
-                price: Number(formData.price),
-                originalPrice: Number(formData.originalPrice || formData.price),
-              } as Product)
-            : p
-        );
+        const updated = prev.map((p) => (p.id === editingProduct.id ? updatedItem : p));
         localStorage.setItem("shambhavi_products_catalog_v2", JSON.stringify(updated));
         return updated;
       });
+
+      syncProductToFirestore(updatedItem).catch((err) =>
+        console.warn("Firestore update warning (local save succeeded):", err)
+      );
     } else {
       const newProduct: Product = {
         id: `p-custom-${Date.now()}`,
@@ -284,6 +360,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         localStorage.setItem("shambhavi_products_catalog_v2", JSON.stringify(updated));
         return updated;
       });
+
+      syncProductToFirestore(newProduct).catch((err) =>
+        console.warn("Firestore create warning (local save succeeded):", err)
+      );
     }
     setIsAddModalOpen(false);
   };
@@ -293,8 +373,92 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     e.preventDefault();
     setStoreSettings(localSettings);
     localStorage.setItem("shambhavi_store_settings_v1", JSON.stringify(localSettings));
+    syncStoreSettingsToFirestore(localSettings).catch((err) =>
+      console.warn("Firestore settings sync warning:", err)
+    );
     setSettingsSavedToast(true);
     setTimeout(() => setSettingsSavedToast(false), 3500);
+  };
+
+  // Firebase Handlers
+  const handleSaveFirebaseConfigFromSnippet = (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const extractField = (key: string) => {
+        const regex = new RegExp(`["']?${key}["']?\\s*:\\s*["']([^"']+)["']`);
+        const match = configSnippet.match(regex);
+        return match ? match[1] : "";
+      };
+
+      const apiKey = extractField("apiKey");
+      const projectId = extractField("projectId");
+      const storageBucket = extractField("storageBucket");
+      const authDomain = extractField("authDomain");
+      const messagingSenderId = extractField("messagingSenderId");
+      const appId = extractField("appId");
+
+      if (!apiKey || !projectId) {
+        throw new Error(
+          "Could not detect valid 'apiKey' and 'projectId'. Please ensure you copied the complete firebaseConfig snippet."
+        );
+      }
+
+      const cfg: FirebaseConfig = {
+        apiKey,
+        projectId,
+        storageBucket: storageBucket || `${projectId}.firebasestorage.app`,
+        authDomain: authDomain || `${projectId}.firebaseapp.com`,
+        messagingSenderId: messagingSenderId || "",
+        appId: appId || "",
+      };
+
+      saveStoredFirebaseConfig(cfg);
+      setFirebaseConfig(cfg);
+      setFirebaseStatusMsg({
+        type: "success",
+        text: `Connected to project "${projectId}". Cloud DB & Storage active!`,
+      });
+      setConfigSnippet("");
+    } catch (err: any) {
+      setFirebaseStatusMsg({
+        type: "error",
+        text: err.message || "Failed to parse Firebase configuration.",
+      });
+    }
+  };
+
+  const handleDisconnectFirebase = () => {
+    if (window.confirm("Disconnect Firebase? Your store will run in local browser storage mode.")) {
+      clearStoredFirebaseConfig();
+      setFirebaseConfig(null);
+      setFirebaseStatusMsg({
+        type: "success",
+        text: "Firebase disconnected. Reverted to local storage.",
+      });
+    }
+  };
+
+  const handleSyncToFirestore = async () => {
+    if (!firebaseConfig) {
+      alert("Please connect Firebase first.");
+      return;
+    }
+    setIsSyncingFirestore(true);
+    setFirebaseStatusMsg(null);
+    try {
+      const count = await seedAllToFirestore(products, categories, storeSettings);
+      setFirebaseStatusMsg({
+        type: "success",
+        text: `Successfully synced ${count} products, categories, and settings to Firestore!`,
+      });
+    } catch (err: any) {
+      setFirebaseStatusMsg({
+        type: "error",
+        text: `Sync error: ${err.message || "Check Firestore Database rules/creation in Firebase Console."}`,
+      });
+    } finally {
+      setIsSyncingFirestore(false);
+    }
   };
 
   // Add Category Handler
@@ -432,6 +596,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           >
             <Settings className="w-4 h-4" />
             <span>Store Settings & Contact</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("firebase")}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-sm transition-all cursor-pointer ${
+              activeTab === "firebase"
+                ? "bg-[#1F1E1D] text-white shadow-xs"
+                : "bg-white text-[#4A4744] border border-[#EAE5DC] hover:text-[#1F1E1D]"
+            }`}
+          >
+            <Cloud className="w-4 h-4 text-[#F5820D]" />
+            <span>Cloud DB & Storage</span>
+            <span
+              className={`w-2 h-2 rounded-full ${
+                firebaseConfig?.projectId ? "bg-[#1FA855] animate-pulse" : "bg-[#9E7D4B]"
+              }`}
+              title={firebaseConfig?.projectId ? "Firebase Active" : "Local Mode"}
+            />
           </button>
         </div>
 
@@ -892,6 +1074,151 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </form>
           </div>
         )}
+
+        {/* TAB 5: CLOUD DATABASE & STORAGE (FIREBASE) */}
+        {activeTab === "firebase" && (
+          <div className="bg-white rounded-sm border border-[#EAE5DC] p-6 text-left shadow-2xs max-w-4xl space-y-6">
+            <div className="border-b border-[#EAE5DC] pb-4">
+              <div className="flex items-center gap-2">
+                <Cloud className="w-5 h-5 text-[#F5820D]" />
+                <h3 className="font-serif-luxury text-xl text-[#1F1E1D]">
+                  Firebase Cloud Database & Storage
+                </h3>
+              </div>
+              <p className="text-xs text-[#78746F] mt-1">
+                Connect Firebase to store your product catalog, categories, and store settings in Google Cloud Firestore and host your product photos on Firebase Storage CDN.
+              </p>
+            </div>
+
+            {/* Connection Status Card */}
+            <div
+              className={`p-4 rounded-sm border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+                firebaseConfig?.projectId
+                  ? "bg-[#EBF7EE] border-[#1FA855]/30 text-[#1E7E34]"
+                  : "bg-[#FFF9F0] border-[#9E7D4B]/30 text-[#8B6B3B]"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-3 h-3 rounded-full mt-1 shrink-0 ${
+                    firebaseConfig?.projectId ? "bg-[#1FA855] animate-pulse" : "bg-[#9E7D4B]"
+                  }`}
+                />
+                <div>
+                  <h4 className="font-semibold text-xs text-[#1F1E1D]">
+                    {firebaseConfig?.projectId
+                      ? `Connected to Firebase Project: ${firebaseConfig.projectId}`
+                      : "Running in Local Storage Mode (Offline Safe)"}
+                  </h4>
+                  <p className="text-[0.72rem] text-[#78746F] mt-0.5">
+                    {firebaseConfig?.projectId
+                      ? `Storage Bucket: ${firebaseConfig.storageBucket || `${firebaseConfig.projectId}.appspot.com`} • Real-time Firestore sync active.`
+                      : "Currently all product updates, images, and categories are saved in browser storage. Connect Firebase below for cloud sync."}
+                  </p>
+                </div>
+              </div>
+
+              {firebaseConfig?.projectId && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={handleSyncToFirestore}
+                    disabled={isSyncingFirestore}
+                    className="px-3 py-1.5 bg-[#1F1E1D] hover:bg-[#33312E] text-white text-xs font-semibold rounded-[2px] shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isSyncingFirestore ? "animate-spin" : ""}`} />
+                    <span>{isSyncingFirestore ? "Syncing..." : "Sync Catalog to Cloud"}</span>
+                  </button>
+                  <button
+                    onClick={handleDisconnectFirebase}
+                    className="px-3 py-1.5 bg-white border border-[#EAE5DC] text-[#D9534F] hover:bg-[#FAF8F5] text-xs font-semibold rounded-[2px] transition-colors cursor-pointer"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {firebaseStatusMsg && (
+              <div
+                className={`p-3 rounded-sm text-xs flex items-center gap-2 ${
+                  firebaseStatusMsg.type === "success"
+                    ? "bg-[#EBF7EE] border border-[#1FA855]/30 text-[#1E7E34]"
+                    : "bg-[#FDF2F2] border border-[#D9534F]/30 text-[#D9534F]"
+                }`}
+              >
+                {firebaseStatusMsg.type === "success" ? (
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                )}
+                <span>{firebaseStatusMsg.text}</span>
+              </div>
+            )}
+
+            {/* Paste Configuration Form */}
+            <div className="bg-[#FAF8F5] border border-[#EAE5DC] rounded-sm p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-semibold text-[#1F1E1D]">
+                  {firebaseConfig?.projectId ? "Update Firebase Project Credentials" : "Connect Your Firebase Project (1-Click Paste)"}
+                </h4>
+                <a
+                  href="https://console.firebase.google.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[0.68rem] text-[#9E7D4B] hover:underline flex items-center gap-1 font-medium"
+                >
+                  <span>Open Firebase Console</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              <p className="text-[0.72rem] text-[#78746F]">
+                In Firebase Console, go to <strong>Project Settings → General → Your apps → Web app (`&lt;/&gt;`)</strong>, copy the <code className="bg-white px-1 border border-[#EAE5DC] rounded-[2px] font-mono">const firebaseConfig = &#123; ... &#125;;</code> snippet, and paste it here:
+              </p>
+
+              <form onSubmit={handleSaveFirebaseConfigFromSnippet} className="space-y-3">
+                <textarea
+                  rows={6}
+                  value={configSnippet}
+                  onChange={(e) => setConfigSnippet(e.target.value)}
+                  placeholder={`const firebaseConfig = {\n  apiKey: "AIzaSy...",\n  authDomain: "shambhavi-creation.firebaseapp.com",\n  projectId: "shambhavi-creation",\n  storageBucket: "shambhavi-creation.firebasestorage.app",\n  messagingSenderId: "...",\n  appId: "..."\n};`}
+                  className="w-full bg-white border border-[#EAE5DC] p-3 text-xs font-mono text-[#1F1E1D] rounded-sm focus:outline-none focus:border-[#9E7D4B]"
+                />
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.68rem] text-[#78746F]">
+                    Keys are safely saved in your browser and used directly by the client SDK.
+                  </span>
+                  <button
+                    type="submit"
+                    className="btn-bronze text-xs py-2 px-5 font-semibold rounded-sm shadow-xs cursor-pointer"
+                  >
+                    Save & Connect Firebase
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Instructions Accordion / Checklist */}
+            <div className="border border-[#EAE5DC] rounded-sm p-4 bg-white space-y-3">
+              <h4 className="text-xs font-semibold text-[#1F1E1D]">
+                How to set up your free Firebase project (Takes 2 minutes):
+              </h4>
+              <ol className="list-decimal list-inside text-xs text-[#4A4744] space-y-2 leading-relaxed">
+                <li>
+                  Go to <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-[#9E7D4B] underline">console.firebase.google.com</a> and click <strong>Create a project</strong> (name it <em>Shambhavi Creation</em>).
+                </li>
+                <li>
+                  In the left sidebar, click <strong>Build → Firestore Database</strong>, then click <strong>Create database</strong> (select test mode or allow read/write).
+                </li>
+                <li>
+                  In the left sidebar, click <strong>Build → Storage</strong>, then click <strong>Get started</strong> (allows image file uploads).
+                </li>
+                <li>
+                  In Project Settings, add a <strong>Web App</strong>, copy the configuration snippet, and paste it above!
+                </li>
+              </ol>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* MODAL: ADD / EDIT PRODUCT */}
@@ -991,35 +1318,100 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
 
-              {/* Photo selector */}
-              <div>
-                <label className="text-xs font-semibold text-[#1F1E1D] block mb-1">
-                  Product Photo Asset *
-                </label>
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-36 overflow-y-auto p-2 bg-[#FAF8F5] border border-[#EAE5DC] rounded-sm mb-2">
-                  {AVAILABLE_PHOTOS.map((ph) => (
-                    <button
-                      key={ph.path}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, image: ph.path })}
-                      className={`relative aspect-square rounded-[2px] overflow-hidden border-2 transition-all cursor-pointer ${
-                        formData.image === ph.path
-                          ? "border-[#9E7D4B] scale-95 shadow-xs"
-                          : "border-transparent opacity-75 hover:opacity-100"
-                      }`}
-                      title={ph.label}
-                    >
-                      <img src={resolveAsset(ph.path)} alt={ph.label} className="w-full h-full object-cover" />
-                    </button>
-                  ))}
+              {/* Photo Upload & Asset Selector */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-[#1F1E1D]">
+                    Product Photo Asset *
+                  </label>
+                  <span className="text-[0.68rem] text-[#9E7D4B] font-medium">
+                    {firebaseConfig?.storageBucket ? "⚡ Firebase Storage Active" : "💾 Local Storage Mode"}
+                  </span>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Or enter custom image URL (e.g. /photos/... or https://...)"
-                  value={formData.image || ""}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full bg-[#FAF8F5] border border-[#EAE5DC] px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-[#9E7D4B]"
-                />
+
+                {/* Direct File Uploader Box */}
+                <div className="border border-dashed border-[#9E7D4B]/40 hover:border-[#9E7D4B] bg-[#FAF8F5] rounded-sm p-3 transition-colors">
+                  <div className="flex items-center gap-3">
+                    {formData.image && (
+                      <img
+                        src={resolveAsset(formData.image)}
+                        alt="Preview"
+                        className="w-14 h-14 object-cover rounded-[2px] border border-[#EAE5DC] shrink-0"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#9E7D4B] hover:bg-[#8B6B3B] text-white text-xs font-semibold rounded-[2px] cursor-pointer shadow-2xs transition-colors">
+                        <UploadCloud className="w-3.5 h-3.5" />
+                        <span>Upload Photo from Phone / PC</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageFileUpload}
+                          disabled={uploadingImage}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="text-[0.68rem] text-[#78746F] mt-1">
+                        JPEG, PNG, WebP up to 10MB. Automatically hosted on Firebase Storage.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Uploading progress bar */}
+                  {uploadingImage && (
+                    <div className="mt-2.5 space-y-1">
+                      <div className="flex items-center justify-between text-[0.68rem] text-[#9E7D4B]">
+                        <span className="flex items-center gap-1">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Uploading to Cloud Storage...
+                        </span>
+                        <span className="font-semibold">{uploadProgress}%</span>
+                      </div>
+                      <div className="w-full bg-[#EAE5DC] h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-[#9E7D4B] h-full transition-all duration-200"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {uploadError && (
+                    <p className="text-[0.68rem] text-[#D9534F] mt-1.5">
+                      {uploadError}
+                    </p>
+                  )}
+                </div>
+
+                {/* Collapsible Studio Gallery / Custom URL */}
+                <div className="pt-1">
+                  <span className="text-[0.68rem] text-[#78746F] block mb-1">
+                    Or pick from authentic studio photoshoot gallery:
+                  </span>
+                  <div className="grid grid-cols-5 sm:grid-cols-6 gap-1.5 max-h-24 overflow-y-auto p-1.5 bg-[#FAF8F5] border border-[#EAE5DC] rounded-sm mb-1.5">
+                    {AVAILABLE_PHOTOS.map((ph) => (
+                      <button
+                        key={ph.path}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, image: ph.path })}
+                        className={`relative aspect-square rounded-[2px] overflow-hidden border-2 transition-all cursor-pointer ${
+                          formData.image === ph.path
+                            ? "border-[#9E7D4B] scale-95 shadow-xs"
+                            : "border-transparent opacity-75 hover:opacity-100"
+                        }`}
+                        title={ph.label}
+                      >
+                        <img src={resolveAsset(ph.path)} alt={ph.label} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Or enter custom image URL (https://... or /photos/...)"
+                    value={formData.image || ""}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    className="w-full bg-[#FAF8F5] border border-[#EAE5DC] px-3 py-1.5 text-xs rounded-sm focus:outline-none focus:border-[#9E7D4B]"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
