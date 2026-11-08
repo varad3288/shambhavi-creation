@@ -625,14 +625,13 @@ export default function App() {
             {/* Brand Logo & Tagline */}
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex flex-col text-left group cursor-pointer"
+              className="flex items-center gap-3 text-left group cursor-pointer py-1"
             >
-              <span className="font-serif-luxury font-semibold text-xl sm:text-2xl md:text-3xl tracking-[0.06em] sm:tracking-[0.08em] text-[#1F1E1D] leading-none group-hover:text-[#9E7D4B] transition-colors">
-                {storeSettings.storeName.toUpperCase()}
-              </span>
-              <span className="text-[0.52rem] sm:text-[0.62rem] uppercase tracking-[0.18em] sm:tracking-[0.3em] text-[#9E7D4B] font-semibold mt-1">
-                {storeSettings.tagline.toUpperCase()}
-              </span>
+              <img
+                src={resolveAsset("/images/shambhavi_logo.jpg")}
+                alt="Shambhavi Creations"
+                className="h-12 sm:h-14 md:h-16 w-auto object-contain mix-blend-multiply group-hover:opacity-90 transition-opacity"
+              />
             </button>
           </div>
 
@@ -1324,9 +1323,13 @@ export default function App() {
             <div className="md:col-span-4 space-y-3">
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="font-serif-luxury font-semibold text-2xl tracking-[0.06em] text-[#1F1E1D] block cursor-pointer text-left"
+                className="block cursor-pointer text-left group"
               >
-                {storeSettings.storeName.toUpperCase()}
+                <img
+                  src={resolveAsset("/images/shambhavi_logo.jpg")}
+                  alt="Shambhavi Creations"
+                  className="h-14 sm:h-16 w-auto object-contain mix-blend-multiply group-hover:opacity-90 transition-opacity mb-1"
+                />
               </button>
               <span className="text-[0.62rem] uppercase tracking-[0.24em] text-[#9E7D4B] font-semibold block">
                 {storeSettings.tagline.toUpperCase()}

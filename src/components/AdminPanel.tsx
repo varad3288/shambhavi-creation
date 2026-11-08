@@ -353,13 +353,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <span>Back to Storefront</span>
             </button>
             <div className="h-4 w-px bg-[#EAE5DC] hidden sm:block" />
-            <div className="text-left">
-              <span className="font-serif-luxury font-semibold text-lg tracking-wide text-[#1F1E1D] block leading-none">
-                {storeSettings.storeName}
-              </span>
-              <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[#9E7D4B] font-semibold">
-                Owner Portal{storeSettings.city ? ` • ${storeSettings.city}` : " • Store & Catalog Manager"}
-              </span>
+            <div className="flex items-center gap-2.5">
+              <img
+                src={resolveAsset("/favicon.png")}
+                alt="Shambhavi Crest"
+                className="w-7 h-7 rounded-full border border-[#EAE5DC] object-cover shadow-2xs"
+              />
+              <div className="text-left">
+                <span className="font-serif-luxury font-semibold text-lg tracking-wide text-[#1F1E1D] block leading-none">
+                  {storeSettings.storeName}
+                </span>
+                <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[#9E7D4B] font-semibold">
+                  Owner Portal{storeSettings.city ? ` • ${storeSettings.city}` : " • Store & Catalog Manager"}
+                </span>
+              </div>
             </div>
           </div>
 
