@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Package,
   Plus,
@@ -18,6 +18,9 @@ import {
   ExternalLink,
   RefreshCw,
   AlertTriangle,
+  Lock,
+  ShieldCheck,
+  LogOut,
 } from "lucide-react";
 import { resolveAsset, formatWhatsAppLink } from "../utils";
 import {
@@ -29,8 +32,13 @@ import {
   removeProductFromFirestore,
   syncStoreSettingsToFirestore,
   seedAllToFirestore,
+  subscribeToAuth,
+  loginAdmin,
+  registerAdmin,
+  logoutAdmin,
   type FirebaseConfig,
 } from "../firebase";
+import type { User } from "firebase/auth";
 
 export interface Product {
   id: string;
@@ -132,6 +140,58 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Auth State
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsub = subscribeToAuth((user) => {
+      setCurrentUser(user);
+      setAuthChecked(true);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      if (isRegisterMode) {
+        await registerAdmin(authEmail, authPassword);
+      } else {
+        await loginAdmin(authEmail, authPassword);
+      }
+    } catch (err: any) {
+      console.error("Auth error:", err);
+      let msg = err.message || "Failed to authenticate.";
+      if (
+        err.code === "auth/invalid-credential" ||
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/wrong-password"
+      ) {
+        msg = "Invalid email or password. Please verify or create an admin account.";
+      } else if (err.code === "auth/operation-not-allowed") {
+        msg =
+          "Email/Password sign-in is not yet enabled in Firebase Console. Enable it in Authentication → Sign-in method.";
+      } else if (err.code === "auth/email-already-in-use") {
+        msg = "This email is already registered. Please sign in instead.";
+      }
+      setAuthError(msg);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await logoutAdmin();
+  };
 
   const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -503,6 +563,101 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const inStockCount = products.filter((p) => p.shippingStatus === "Ready to Ship").length;
   const soldOutCount = products.filter((p) => p.shippingStatus === "Sold Out").length;
 
+  if (authChecked && !currentUser) {
+    return (
+      <div className="min-h-screen bg-[#F7F5F0] flex flex-col justify-center items-center p-4">
+        <div className="max-w-md w-full bg-white border border-[#EAE5DC] rounded-sm p-6 sm:p-8 shadow-md text-left">
+          <div className="text-center mb-6">
+            <img
+              src={resolveAsset("/favicon.png")}
+              alt="Shambhavi Creations"
+              className="w-16 h-16 mx-auto mb-3 rounded-full border border-[#EAE5DC] shadow-xs object-cover"
+            />
+            <h2 className="font-serif-luxury text-2xl text-[#1F1E1D]">
+              Owner Administration
+            </h2>
+            <p className="text-xs text-[#78746F] mt-1">
+              Sign in to manage products, prices, and upload photos to Firebase.
+            </p>
+          </div>
+
+          {authError && (
+            <div className="mb-4 p-3 bg-[#FDF2F2] border border-[#D9534F]/30 rounded-sm text-xs text-[#D9534F] flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>{authError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleAuthSubmit} className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-[#1F1E1D] block mb-1">
+                Admin Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                placeholder="admin@shambhavicreation.com"
+                className="w-full bg-[#FAF8F5] border border-[#EAE5DC] px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-[#9E7D4B]"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-[#1F1E1D] block mb-1">
+                Admin Password
+              </label>
+              <input
+                type="password"
+                required
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-[#FAF8F5] border border-[#EAE5DC] px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-[#9E7D4B]"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={authLoading}
+              className="w-full btn-bronze py-2.5 text-xs font-semibold rounded-sm shadow-xs cursor-pointer flex items-center justify-center gap-2"
+            >
+              {authLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Authenticating...</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>{isRegisterMode ? "Register First Admin Account" : "Sign In to Portal"}</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="mt-5 pt-4 border-t border-[#F0ECE6] flex items-center justify-between text-xs">
+            <button
+              onClick={() => {
+                setIsRegisterMode(!isRegisterMode);
+                setAuthError(null);
+              }}
+              className="text-[#9E7D4B] hover:underline font-medium cursor-pointer"
+            >
+              {isRegisterMode ? "Already have an account? Sign In" : "Need to register first admin?"}
+            </button>
+            <button
+              onClick={onBackToStore}
+              className="text-[#78746F] hover:text-[#1F1E1D] cursor-pointer"
+            >
+              Back to Storefront
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F7F5F0] text-[#1F1E1D] font-sans">
       {/* Top Bar */}
@@ -535,6 +690,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {currentUser && (
+              <div className="hidden sm:flex items-center gap-2 text-xs text-[#78746F] bg-[#FAF8F5] border border-[#EAE5DC] px-2.5 py-1.5 rounded-sm">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#1FA855]" />
+                <span className="truncate max-w-[140px] font-medium text-[#1F1E1D]">
+                  {currentUser.email}
+                </span>
+                <button
+                  onClick={handleSignOut}
+                  className="text-[0.68rem] text-[#D9534F] hover:underline font-semibold ml-1 cursor-pointer flex items-center gap-1"
+                  title="Sign out"
+                >
+                  <LogOut className="w-3 h-3" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
             <button
               onClick={handleOpenAdd}
               className="btn-bronze text-xs py-2 px-3 sm:px-4 flex items-center gap-1.5 shadow-sm cursor-pointer"

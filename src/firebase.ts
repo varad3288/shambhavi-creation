@@ -1,5 +1,14 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  type Auth,
+  type User,
+} from "firebase/auth";
+import {
   getFirestore,
   collection,
   doc,
@@ -108,6 +117,43 @@ export function getFirebaseInstance(): {
   }
 
   return { app: cachedApp!, db: cachedDb!, storage: cachedStorage! };
+}
+
+let cachedAuth: Auth | null = null;
+
+export function getFirebaseAuth(): Auth {
+  const { app } = getFirebaseInstance();
+  if (!cachedAuth && app) {
+    cachedAuth = getAuth(app);
+  }
+  return cachedAuth!;
+}
+
+export function subscribeToAuth(callback: (user: User | null) => void): () => void {
+  try {
+    const auth = getFirebaseAuth();
+    return onAuthStateChanged(auth, callback);
+  } catch (e) {
+    console.warn("Auth subscription error:", e);
+    return () => {};
+  }
+}
+
+export async function loginAdmin(email: string, pass: string): Promise<User> {
+  const auth = getFirebaseAuth();
+  const cred = await signInWithEmailAndPassword(auth, email, pass);
+  return cred.user;
+}
+
+export async function registerAdmin(email: string, pass: string): Promise<User> {
+  const auth = getFirebaseAuth();
+  const cred = await createUserWithEmailAndPassword(auth, email, pass);
+  return cred.user;
+}
+
+export async function logoutAdmin(): Promise<void> {
+  const auth = getFirebaseAuth();
+  await signOut(auth);
 }
 
 /**
