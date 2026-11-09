@@ -90,6 +90,7 @@ interface AdminPanelProps {
   setStoreSettings: React.Dispatch<React.SetStateAction<StoreSettings>>;
   categories: CategoryItem[];
   setCategories: React.Dispatch<React.SetStateAction<CategoryItem[]>>;
+  defaultProducts?: Product[];
 }
 
 export const AVAILABLE_PHOTOS = [
@@ -123,12 +124,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   setStoreSettings,
   categories,
   setCategories,
+  defaultProducts = [],
 }) => {
   const [activeTab, setActiveTab] = useState<"products" | "categories" | "inquiries" | "settings" | "firebase">("products");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [restoreStatus, setRestoreStatus] = useState<string | null>(null);
+  const [isRestoringCatalog, setIsRestoringCatalog] = useState(false);
 
   // Firebase State
   const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig | null>(() => getStoredFirebaseConfig());
@@ -475,6 +479,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       );
     }
     setIsAddModalOpen(false);
+  };
+
+  const handleRestoreCatalog = async () => {
+    if (!defaultProducts || defaultProducts.length === 0) return;
+    setIsRestoringCatalog(true);
+    setRestoreStatus("Restoring all 36 handcrafted jewellery pieces to catalog & Firebase...");
+    try {
+      // 1. Merge default products with current list so no custom edits or stock statuses are lost
+      const map = new Map<string, Product>();
+      defaultProducts.forEach((p) => map.set(p.id, p));
+      products.forEach((p) => map.set(p.id, p));
+      const fullList = Array.from(map.values());
+
+      setProducts(fullList);
+      localStorage.setItem("shambhavi_products_catalog_v2", JSON.stringify(fullList));
+
+      // 2. Sync full catalog to Firebase Firestore
+      const count = await seedAllToFirestore(fullList, categories, storeSettings);
+      setRestoreStatus(`✓ Successfully restored and synced all ${count} products to Firebase!`);
+      setTimeout(() => setRestoreStatus(null), 5000);
+    } catch (err: any) {
+      console.error("Error restoring catalog:", err);
+      setRestoreStatus("Restored locally. Cloud note: " + (err.message || "check connection"));
+      setTimeout(() => setRestoreStatus(null), 5000);
+    } finally {
+      setIsRestoringCatalog(false);
+    }
   };
 
   // Save Settings handler
@@ -879,6 +910,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
 
+            {/* Restore / Sync Status Toast */}
+            {restoreStatus && (
+              <div className="bg-[#EBF7EE] border border-[#1FA855]/30 text-[#1E7E34] px-4 py-3 rounded-sm flex items-center justify-between text-xs font-medium animate-in fade-in duration-200">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{restoreStatus}</span>
+                </div>
+              </div>
+            )}
+
             {/* Filter & Search Bar */}
             <div className="bg-white rounded-sm border border-[#EAE5DC] p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-2xs">
               <div className="relative flex-1 max-w-md">
@@ -892,18 +933,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <Filter className="w-3.5 h-3.5 text-[#78746F]" />
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="bg-[#FAF8F5] border border-[#EAE5DC] text-xs text-[#1F1E1D] py-2 px-3 rounded-sm focus:outline-none focus:border-[#9E7D4B] cursor-pointer"
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleRestoreCatalog}
+                  disabled={isRestoringCatalog}
+                  className="px-3 py-2 bg-[#FAF8F5] hover:bg-[#F0ECE6] border border-[#EAE5DC] hover:border-[#9E7D4B] text-[#9E7D4B] text-xs font-semibold rounded-sm transition-colors cursor-pointer flex items-center gap-1.5"
+                  title="Sync and restore all 36 authentic handcrafted pieces to catalog & cloud"
                 >
-                  <option value="all">All Categories</option>
-                  {categories.filter((c) => c.id !== "all").map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.label}</option>
-                  ))}
-                </select>
+                  <RefreshCw className={`w-3.5 h-3.5 ${isRestoringCatalog ? "animate-spin" : ""}`} />
+                  <span>Sync / Restore All 36 Pieces ({totalProducts})</span>
+                </button>
+
+                <div className="flex items-center gap-1.5">
+                  <Filter className="w-3.5 h-3.5 text-[#78746F]" />
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="bg-[#FAF8F5] border border-[#EAE5DC] text-xs text-[#1F1E1D] py-2 px-3 rounded-sm focus:outline-none focus:border-[#9E7D4B] cursor-pointer"
+                  >
+                    <option value="all">All Categories</option>
+                    {categories.filter((c) => c.id !== "all").map((cat) => (
+                      <option key={cat.id} value={cat.id}>{cat.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 

@@ -303,15 +303,28 @@ export async function seedAllToFirestore(
   await syncStoreSettingsToFirestore(settings);
 
   // Sync categories
-  const catDoc = doc(db, "settings", "categories");
-  await setDoc(catDoc, { items: categories });
+  try {
+    const catDoc = doc(db, "settings", "categories");
+    await setDoc(catDoc, { items: categories });
+  } catch (e) {
+    console.warn("Categories sync note:", e);
+  }
 
-  // Sync products
+  // Sync products in batches of 10
   let synced = 0;
-  for (const product of products) {
-    const pDoc = doc(db, "products", product.id);
-    await setDoc(pDoc, product, { merge: true });
-    synced++;
+  for (let i = 0; i < products.length; i += 10) {
+    const batch = products.slice(i, i + 10);
+    await Promise.all(
+      batch.map(async (product) => {
+        try {
+          const pDoc = doc(db, "products", product.id);
+          await setDoc(pDoc, product, { merge: true });
+          synced++;
+        } catch (err) {
+          console.warn("Sync product note:", product.id, err);
+        }
+      })
+    );
   }
 
   return synced;
@@ -332,7 +345,7 @@ export async function countFirestoreProducts(): Promise<number> {
 }
 
 /**
- * Auto-seed Firestore on initial launch if collection is empty
+ * Auto-seed Firestore on initial launch or upload any missing curated items
  */
 export async function autoSeedIfEmpty(
   products: Product[],
@@ -340,9 +353,40 @@ export async function autoSeedIfEmpty(
   settings: StoreSettings
 ) {
   try {
-    const count = await countFirestoreProducts();
-    if (count === 0 && products.length > 0) {
-      await seedAllToFirestore(products, categories, settings);
+    const { db } = getFirebaseInstance();
+    const colRef = collection(db, "products");
+    const snap = await getDocs(colRef);
+    const existingIds = new Set(snap.docs.map((d) => d.id));
+
+    // If any base catalog items are missing from Firestore, auto-seed them
+    const missing = products.filter((p) => !existingIds.has(p.id));
+    if (missing.length > 0) {
+      console.log(`Auto-seeding ${missing.length} missing catalog items to Firestore...`);
+      for (let i = 0; i < missing.length; i += 10) {
+        const batch = missing.slice(i, i + 10);
+        await Promise.all(
+          batch.map(async (product) => {
+            try {
+              const pDoc = doc(db, "products", product.id);
+              await setDoc(pDoc, product, { merge: true });
+            } catch (err) {
+              console.warn("Missing item seed note:", product.id, err);
+            }
+          })
+        );
+      }
+    }
+
+    // Ensure store settings and categories exist
+    try {
+      const setSnap = await getDocs(collection(db, "settings"));
+      if (setSnap.empty) {
+        await syncStoreSettingsToFirestore(settings);
+        const catDoc = doc(db, "settings", "categories");
+        await setDoc(catDoc, { items: categories });
+      }
+    } catch {
+      // ignore
     }
   } catch (err) {
     console.warn("Auto-seed check note:", err);

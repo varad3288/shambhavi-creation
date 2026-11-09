@@ -427,11 +427,20 @@ export default function App() {
     return DEFAULT_CATEGORIES;
   });
 
-  // Product Catalog with persistence
+  // Product Catalog with persistence & automatic catalog healing
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem("shambhavi_products_catalog_v2");
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: Product[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Merge with CURATED_PRODUCTS so an accidental single-item overwrite is immediately healed!
+          const map = new Map<string, Product>();
+          CURATED_PRODUCTS.forEach((p) => map.set(p.id, p));
+          parsed.forEach((p) => map.set(p.id, p));
+          return Array.from(map.values());
+        }
+      }
     } catch (e) {
       console.error("Error reading products catalog from localStorage", e);
     }
@@ -452,13 +461,22 @@ export default function App() {
 
   // Real-time Firestore sync when Firebase is configured
   useEffect(() => {
-    // Attempt auto-seed if cloud database is currently unpopulated
+    // Attempt auto-seed if cloud database is currently unpopulated or missing items
     autoSeedIfEmpty(CURATED_PRODUCTS, DEFAULT_CATEGORIES, DEFAULT_STORE_SETTINGS);
 
     const unsubProducts = subscribeToFirestoreProducts((liveProducts) => {
       if (liveProducts && liveProducts.length > 0) {
-        setProducts(liveProducts);
-        localStorage.setItem("shambhavi_products_catalog_v2", JSON.stringify(liveProducts));
+        setProducts((prev) => {
+          // Merge live Firestore updates with CURATED_PRODUCTS and prev state so default items are never wiped out
+          const map = new Map<string, Product>();
+          CURATED_PRODUCTS.forEach((p) => map.set(p.id, p));
+          prev.forEach((p) => map.set(p.id, p));
+          liveProducts.forEach((p) => map.set(p.id, p));
+
+          const merged = Array.from(map.values());
+          localStorage.setItem("shambhavi_products_catalog_v2", JSON.stringify(merged));
+          return merged;
+        });
       }
     });
 
@@ -609,6 +627,7 @@ export default function App() {
       <AdminPanel
         products={products}
         setProducts={setProducts}
+        defaultProducts={CURATED_PRODUCTS}
         onBackToStore={() => {
           setCurrentView("storefront");
           window.location.hash = "#store";
