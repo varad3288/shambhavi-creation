@@ -655,26 +655,35 @@ export default function App() {
             {/* Brand Logo & Wordmark - Integrated Seamlessly into Header */}
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-2.5 sm:gap-3 text-left group cursor-pointer py-1 select-none"
+              className="flex items-center gap-2 sm:gap-3 text-left group cursor-pointer py-1 select-none shrink-0"
             >
               <div className="relative flex items-center justify-center shrink-0">
                 <img
                   src={resolveAsset("/images/shambhavi_crest_transparent.png")}
                   alt="Shambhavi Creations Emblem"
-                  className="h-11 sm:h-13 md:h-14 w-auto object-contain drop-shadow-[0_2px_8px_rgba(158,125,75,0.22)] group-hover:scale-105 transition-transform duration-300"
+                  className="h-10 sm:h-12 md:h-13 w-auto object-contain drop-shadow-[0_2px_8px_rgba(158,125,75,0.22)] group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
 
-              <div className="flex flex-col justify-center">
-                <span className="font-serif-luxury text-base sm:text-lg md:text-[1.3rem] font-bold tracking-[0.2em] text-[#1F1E1D] group-hover:text-[#9E7D4B] transition-colors uppercase leading-none">
+              <div className="flex flex-col justify-center min-w-0">
+                <span className="font-serif-luxury text-[0.95rem] sm:text-lg md:text-[1.3rem] font-bold tracking-[0.18em] sm:tracking-[0.2em] text-[#1F1E1D] group-hover:text-[#9E7D4B] transition-colors uppercase leading-none whitespace-nowrap">
                   Shambhavi
                 </span>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span className="text-[0.55rem] sm:text-[0.62rem] uppercase tracking-[0.26em] text-[#9E7D4B] font-semibold leading-none">
+                
+                {/* Mobile: Clean single line that never wraps */}
+                <div className="sm:hidden mt-1 whitespace-nowrap">
+                  <span className="text-[0.52rem] uppercase tracking-[0.22em] text-[#9E7D4B] font-semibold leading-none whitespace-nowrap">
+                    {storeSettings.tagline || "Fine Jewellery"}
+                  </span>
+                </div>
+
+                {/* Tablet & Desktop: Creations • Fine Jewellery */}
+                <div className="hidden sm:flex items-center gap-1.5 mt-1 whitespace-nowrap">
+                  <span className="text-[0.62rem] uppercase tracking-[0.26em] text-[#9E7D4B] font-semibold leading-none whitespace-nowrap">
                     Creations
                   </span>
                   <span className="text-[0.45rem] text-[#C2A374] leading-none">•</span>
-                  <span className="text-[0.5rem] sm:text-[0.56rem] uppercase tracking-[0.2em] text-[#78746F] font-medium leading-none">
+                  <span className="text-[0.56rem] uppercase tracking-[0.2em] text-[#78746F] font-medium leading-none whitespace-nowrap">
                     {storeSettings.tagline}
                   </span>
                 </div>
@@ -1377,16 +1386,16 @@ export default function App() {
                   alt="Shambhavi Creations"
                   className="h-13 sm:h-14 w-auto object-contain drop-shadow-[0_2px_8px_rgba(158,125,75,0.2)] group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="flex flex-col justify-center">
-                  <span className="font-serif-luxury text-lg sm:text-xl font-bold tracking-[0.2em] text-[#1F1E1D] group-hover:text-[#9E7D4B] transition-colors uppercase leading-none">
+                <div className="flex flex-col justify-center min-w-0">
+                  <span className="font-serif-luxury text-lg sm:text-xl font-bold tracking-[0.2em] text-[#1F1E1D] group-hover:text-[#9E7D4B] transition-colors uppercase leading-none whitespace-nowrap">
                     Shambhavi
                   </span>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <span className="text-[0.58rem] uppercase tracking-[0.28em] text-[#9E7D4B] font-semibold leading-none">
+                  <div className="flex items-center gap-1.5 mt-1 whitespace-nowrap">
+                    <span className="text-[0.58rem] uppercase tracking-[0.28em] text-[#9E7D4B] font-semibold leading-none whitespace-nowrap">
                       Creations
                     </span>
                     <span className="text-[0.45rem] text-[#C2A374] leading-none">•</span>
-                    <span className="text-[0.52rem] uppercase tracking-[0.22em] text-[#78746F] font-medium leading-none">
+                    <span className="text-[0.52rem] uppercase tracking-[0.22em] text-[#78746F] font-medium leading-none whitespace-nowrap">
                       {storeSettings.tagline}
                     </span>
                   </div>
