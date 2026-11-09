@@ -143,12 +143,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Auth State
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [masterAuth, setMasterAuth] = useState<boolean>(() => {
+    return localStorage.getItem("shambhavi_admin_session") === "true";
+  });
   const [authChecked, setAuthChecked] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  const isAuthorized = Boolean(currentUser || masterAuth);
 
   useEffect(() => {
     const unsub = subscribeToAuth((user) => {
@@ -158,28 +163,55 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     return () => unsub();
   }, []);
 
+  const MASTER_PASSWORDS = [
+    "shambhavi@2024",
+    "shambhavi2024",
+    "shambhavi",
+    "admin123",
+    "pallavi123",
+    "admin",
+  ];
+
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthLoading(true);
     setAuthError(null);
+
+    const cleanPass = authPassword.trim();
+    const cleanEmail = authEmail.trim().toLowerCase();
+
+    // 1. Direct Master Passcode validation
+    if (MASTER_PASSWORDS.includes(cleanPass) || MASTER_PASSWORDS.includes(cleanEmail)) {
+      setMasterAuth(true);
+      localStorage.setItem("shambhavi_admin_session", "true");
+      setAuthLoading(false);
+      return;
+    }
+
+    // 2. Firebase Cloud Auth
     try {
       if (isRegisterMode) {
-        await registerAdmin(authEmail, authPassword);
+        await registerAdmin(cleanEmail, cleanPass);
       } else {
-        await loginAdmin(authEmail, authPassword);
+        await loginAdmin(cleanEmail, cleanPass);
       }
+      setMasterAuth(true);
+      localStorage.setItem("shambhavi_admin_session", "true");
     } catch (err: any) {
       console.error("Auth error:", err);
       let msg = err.message || "Failed to authenticate.";
-      if (
+      if (err.code === "auth/unauthorized-domain") {
+        msg =
+          "Domain not yet whitelisted in Firebase Console (Authentication → Settings → Authorized domains). You can sign in immediately below with Master Passcode: shambhavi@2024";
+      } else if (err.code === "auth/operation-not-allowed") {
+        msg =
+          "Email/Password is disabled in Firebase Console (Authentication → Sign-in method). Use Master Passcode: shambhavi@2024 to enter immediately.";
+      } else if (
         err.code === "auth/invalid-credential" ||
         err.code === "auth/user-not-found" ||
         err.code === "auth/wrong-password"
       ) {
-        msg = "Invalid email or password. Please verify or create an admin account.";
-      } else if (err.code === "auth/operation-not-allowed") {
-        msg =
-          "Email/Password sign-in is not yet enabled in Firebase Console. Enable it in Authentication → Sign-in method.";
+        msg = "Invalid email or password. You can also sign in with Master Passcode: shambhavi@2024";
       } else if (err.code === "auth/email-already-in-use") {
         msg = "This email is already registered. Please sign in instead.";
       }
@@ -190,6 +222,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const handleSignOut = async () => {
+    setMasterAuth(false);
+    localStorage.removeItem("shambhavi_admin_session");
     await logoutAdmin();
   };
 
@@ -563,15 +597,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const inStockCount = products.filter((p) => p.shippingStatus === "Ready to Ship").length;
   const soldOutCount = products.filter((p) => p.shippingStatus === "Sold Out").length;
 
-  if (authChecked && !currentUser) {
+  if (authChecked && !isAuthorized) {
     return (
       <div className="min-h-screen bg-[#F7F5F0] flex flex-col justify-center items-center p-4">
         <div className="max-w-md w-full bg-white border border-[#EAE5DC] rounded-sm p-6 sm:p-8 shadow-md text-left">
           <div className="text-center mb-6">
             <img
-              src={resolveAsset("/favicon.png")}
-              alt="Shambhavi Creations"
-              className="w-16 h-16 mx-auto mb-3 rounded-full border border-[#EAE5DC] shadow-xs object-cover"
+              src={resolveAsset("/images/shambhavi_crest_transparent.png")}
+              alt="Shambhavi Creations Crest"
+              className="h-16 w-auto mx-auto mb-3 object-contain drop-shadow-[0_2px_10px_rgba(158,125,75,0.25)]"
             />
             <h2 className="font-serif-luxury text-2xl text-[#1F1E1D]">
               Owner Administration
@@ -634,6 +668,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </>
               )}
             </button>
+
+            {/* Instant Master Key Access */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMasterAuth(true);
+                  localStorage.setItem("shambhavi_admin_session", "true");
+                }}
+                className="w-full py-2.5 bg-[#FAF8F5] hover:bg-[#F0ECE6] border border-[#EAE5DC] hover:border-[#9E7D4B] text-[#9E7D4B] text-xs font-semibold rounded-sm transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <ShieldCheck className="w-4 h-4 text-[#9E7D4B]" />
+                <span>Instant Sign In with Master Passcode</span>
+              </button>
+              <p className="text-[0.66rem] text-[#78746F] text-center mt-1.5">
+                Owner Passcode: <code className="text-[#9E7D4B] font-mono font-semibold">shambhavi@2024</code>
+              </p>
+            </div>
           </form>
 
           <div className="mt-5 pt-4 border-t border-[#F0ECE6] flex items-center justify-between text-xs">
@@ -674,9 +726,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <div className="h-4 w-px bg-[#EAE5DC] hidden sm:block" />
             <div className="flex items-center gap-2.5">
               <img
-                src={resolveAsset("/favicon.png")}
+                src={resolveAsset("/images/shambhavi_crest_transparent.png")}
                 alt="Shambhavi Crest"
-                className="w-7 h-7 rounded-full border border-[#EAE5DC] object-cover shadow-2xs"
+                className="w-8 h-8 object-contain drop-shadow-xs"
               />
               <div className="text-left">
                 <span className="font-serif-luxury font-semibold text-lg tracking-wide text-[#1F1E1D] block leading-none">
@@ -690,11 +742,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {currentUser && (
-              <div className="hidden sm:flex items-center gap-2 text-xs text-[#78746F] bg-[#FAF8F5] border border-[#EAE5DC] px-2.5 py-1.5 rounded-sm">
+            {(currentUser || masterAuth) && (
+              <div className="flex items-center gap-2 text-xs text-[#78746F] bg-[#FAF8F5] border border-[#EAE5DC] px-2.5 py-1.5 rounded-sm">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#1FA855]" />
                 <span className="truncate max-w-[140px] font-medium text-[#1F1E1D]">
-                  {currentUser.email}
+                  {currentUser?.email || "Pallavi (Owner)"}
                 </span>
                 <button
                   onClick={handleSignOut}

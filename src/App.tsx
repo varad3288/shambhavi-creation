@@ -652,16 +652,33 @@ export default function App() {
               <Menu className="w-6 h-6 stroke-[1.5]" />
             </button>
 
-            {/* Brand Logo & Tagline */}
+            {/* Brand Logo & Wordmark - Integrated Seamlessly into Header */}
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-3 text-left group cursor-pointer py-1"
+              className="flex items-center gap-2.5 sm:gap-3 text-left group cursor-pointer py-1 select-none"
             >
-              <img
-                src={resolveAsset("/images/shambhavi_logo.jpg")}
-                alt="Shambhavi Creations"
-                className="h-12 sm:h-14 md:h-16 w-auto object-contain mix-blend-multiply group-hover:opacity-90 transition-opacity"
-              />
+              <div className="relative flex items-center justify-center shrink-0">
+                <img
+                  src={resolveAsset("/images/shambhavi_crest_transparent.png")}
+                  alt="Shambhavi Creations Emblem"
+                  className="h-11 sm:h-13 md:h-14 w-auto object-contain drop-shadow-[0_2px_8px_rgba(158,125,75,0.22)] group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+
+              <div className="flex flex-col justify-center">
+                <span className="font-serif-luxury text-base sm:text-lg md:text-[1.3rem] font-bold tracking-[0.2em] text-[#1F1E1D] group-hover:text-[#9E7D4B] transition-colors uppercase leading-none">
+                  Shambhavi
+                </span>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[0.55rem] sm:text-[0.62rem] uppercase tracking-[0.26em] text-[#9E7D4B] font-semibold leading-none">
+                    Creations
+                  </span>
+                  <span className="text-[0.45rem] text-[#C2A374] leading-none">•</span>
+                  <span className="text-[0.5rem] sm:text-[0.56rem] uppercase tracking-[0.2em] text-[#78746F] font-medium leading-none">
+                    {storeSettings.tagline}
+                  </span>
+                </div>
+              </div>
             </button>
           </div>
 
@@ -1353,17 +1370,28 @@ export default function App() {
             <div className="md:col-span-4 space-y-3">
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="block cursor-pointer text-left group"
+                className="flex items-center gap-3 text-left group cursor-pointer select-none"
               >
                 <img
-                  src={resolveAsset("/images/shambhavi_logo.jpg")}
+                  src={resolveAsset("/images/shambhavi_crest_transparent.png")}
                   alt="Shambhavi Creations"
-                  className="h-14 sm:h-16 w-auto object-contain mix-blend-multiply group-hover:opacity-90 transition-opacity mb-1"
+                  className="h-13 sm:h-14 w-auto object-contain drop-shadow-[0_2px_8px_rgba(158,125,75,0.2)] group-hover:scale-105 transition-transform duration-300"
                 />
+                <div className="flex flex-col justify-center">
+                  <span className="font-serif-luxury text-lg sm:text-xl font-bold tracking-[0.2em] text-[#1F1E1D] group-hover:text-[#9E7D4B] transition-colors uppercase leading-none">
+                    Shambhavi
+                  </span>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-[0.58rem] uppercase tracking-[0.28em] text-[#9E7D4B] font-semibold leading-none">
+                      Creations
+                    </span>
+                    <span className="text-[0.45rem] text-[#C2A374] leading-none">•</span>
+                    <span className="text-[0.52rem] uppercase tracking-[0.22em] text-[#78746F] font-medium leading-none">
+                      {storeSettings.tagline}
+                    </span>
+                  </div>
+                </div>
               </button>
-              <span className="text-[0.62rem] uppercase tracking-[0.24em] text-[#9E7D4B] font-semibold block">
-                {storeSettings.tagline.toUpperCase()}
-              </span>
               <p className="text-xs text-[#78746F] max-w-sm leading-relaxed">
                 Handcrafted imitation jewellery, bridal collections, and authentic festive ornaments.
               </p>
