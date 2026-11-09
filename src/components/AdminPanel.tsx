@@ -637,45 +637,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           )}
 
-          {/* Quick 1-Click Access Card */}
-          <div className="mb-5 p-4 bg-[#FAF8F5] border border-[#9E7D4B]/30 rounded-sm text-left">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-semibold text-[#1F1E1D] flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#9E7D4B]" />
-                Store Owner Fast Unlock
-              </span>
-              <span className="text-[0.62rem] bg-[#EBF7EE] text-[#1E7E34] px-2 py-0.5 rounded-full font-semibold">
-                Instant Access
-              </span>
-            </div>
-            <p className="text-[0.72rem] text-[#78746F] leading-relaxed mb-3">
-              Direct access for Pallavi &amp; store administration without waiting for Firebase Console configuration.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setMasterAuth(true);
-                localStorage.setItem("shambhavi_admin_session", "true");
-              }}
-              className="w-full btn-bronze py-2.5 text-xs font-semibold rounded-sm shadow-xs cursor-pointer flex items-center justify-center gap-2"
-            >
-              <span>Enter Admin Portal</span>
-              <span>&rarr;</span>
-            </button>
-            <p className="text-[0.65rem] text-[#78746F] text-center mt-2">
-              Master Passkey: <code className="text-[#9E7D4B] font-mono font-semibold">shambhavi@2024</code>
-            </p>
-          </div>
-
-          <div className="relative my-4 text-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#EAE5DC]" />
-            </div>
-            <span className="relative bg-white px-3 text-[0.68rem] uppercase tracking-wider text-[#78746F]">
-              Or Sign In with Email
-            </span>
-          </div>
-
           <form onSubmit={handleAuthSubmit} className="space-y-4">
             <div>
               <label className="text-xs font-semibold text-[#1F1E1D] block mb-1">
@@ -708,17 +669,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <button
               type="submit"
               disabled={authLoading}
-              className="w-full bg-[#FAF8F5] hover:bg-[#F0ECE6] border border-[#EAE5DC] hover:border-[#9E7D4B] text-[#1F1E1D] py-2.5 text-xs font-semibold rounded-sm shadow-2xs cursor-pointer flex items-center justify-center gap-2 transition-colors"
+              className="w-full btn-bronze py-2.5 text-xs font-semibold rounded-sm shadow-xs cursor-pointer flex items-center justify-center gap-2"
             >
               {authLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Authenticating...</span>
+                  <span>Signing in...</span>
                 </>
               ) : (
                 <>
-                  <Lock className="w-3.5 h-3.5 text-[#9E7D4B]" />
-                  <span>{isRegisterMode ? "Register & Enter Portal" : "Sign In with Email"}</span>
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>{isRegisterMode ? "Register Admin Account" : "Sign In to Portal"}</span>
                 </>
               )}
             </button>
