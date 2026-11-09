@@ -74,7 +74,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 184,
     image: "/photos/shambhavi_signature_wati_haar.jpg",
-    badge: { text: "Original Click", variant: "bestseller" },
     plating: "Gold Plated Finish",
     stones: "Traditional Handcrafted Dual Wati with 3-Line Black & Gold Beads",
     description: "Signature 3-line traditional Maharashtrian Wati Mangalsutra crafted with delicate black beads, fluted gold beads, and rich gold polish.",
@@ -90,7 +89,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 142,
     image: "/photos/jadau_ruby_emerald_kadas.jpg",
-    badge: { text: "Original Click", variant: "bestseller" },
     plating: "Antique Gold Finish",
     stones: "Jadau Rubies, Emeralds & Seed Pearl Border",
     description: "Exquisite pair of handcrafted bridal kadas with royal floral carving, fine seed pearls, and secure side lock. Fits comfortably on all wrists.",
@@ -106,7 +104,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 118,
     image: "/photos/south_temple_peacock_haar.jpg",
-    badge: { text: "Original Click", variant: "few-left" },
     plating: "Antique Matte Gold Finish",
     stones: "Peacock Motif Medallion with Ruby Cabochon Drop & Matching Studs",
     description: "Grand South Indian temple necklace set with an intricate peacock medallion, ruby gemstone drops, and matching temple stud earrings.",
@@ -122,7 +119,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 156,
     image: "/photos/classic_patli_tode_bangles.jpg",
-    badge: { text: "Original Click", variant: "bestseller" },
     plating: "24K Gold Polish Finish",
     stones: "Twisted Wire Rope Carving (Set of 6 Bangles)",
     description: "Traditional daily and festive wear twisted wire bangles stack in pure yellow gold polish. Lightweight, smooth edges, and long lasting.",
@@ -138,7 +134,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 4.8,
     reviewsCount: 126,
     image: "/photos/photo_11.jpg",
-    badge: { text: "Original Click", variant: "new" },
     plating: "Gold Plated Finish",
     stones: "Micro Pave Floral Cap with Auspicious Black Beads",
     description: "Dual-chain wati mangalsutra featuring delicate micro-etched floral cup details and auspicious high-luster black beads.",
@@ -154,7 +149,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 94,
     image: "/photos/peshwai_ruby_cluster_kadas.jpg",
-    badge: { text: "Original Click", variant: "few-left" },
     plating: "Antique Matte Finish",
     stones: "Carved Floral Ruby Dome Cabochons",
     description: "Traditional Peshwai antique finish kadas adorned with raised ruby flower clusters. Styled traditionally with Paithani sarees.",
@@ -170,7 +164,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 88,
     image: "/photos/russian_emerald_royal_bangles.jpg",
-    badge: { text: "Original Click", variant: "bestseller" },
     plating: "Antique Brass Polish",
     stones: "Baguette Cut Russian Emeralds & Rubies",
     description: "Regal openable bridal kadas accented with faceted faux Russian emeralds and ruby gemstones for an opulent wedding look.",
@@ -186,7 +179,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 76,
     image: "/photos/temple_floral_medallion_necklace.jpg",
-    badge: { text: "Original Click", variant: "few-left" },
     plating: "Temple Matte Finish",
     stones: "Goddess Lakshmi Floral Repoussé & Coin Drops",
     description: "Intricately embossed temple deity medallion necklace with auspicious floral filigree and matching earrings.",
@@ -202,7 +194,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 112,
     image: "/photos/shambhavi_diamond_wati_set.jpg",
-    badge: { text: "Original Click", variant: "bestseller" },
     plating: "Dual Tone Gold Finish",
     stones: "American Diamond Floret Cluster in Traditional Wati",
     description: "Modern twist on traditional wati mangalsutra with sparkling cubic zirconia floral florets and matching gold bangles.",
@@ -218,7 +209,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 138,
     image: "/photos/photo_18.jpg",
-    badge: { text: "Original Click", variant: "bestseller" },
     plating: "Pure 24K Micro Gold Plated",
     stones: "Traditional Maharashtrian Heavy Watis",
     description: "Grand 28-inch long traditional mangalsutra with dual hollow-carved wati medallions. A prized wedding heirloom piece.",
@@ -234,7 +224,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 96,
     image: "/photos/photo_17.jpg",
-    badge: { text: "Original Click", variant: "new" },
     plating: "Yellow Gold Polish",
     stones: "Ruby Halo Beads with Traditional Wati Cups",
     description: "Festive ensemble pairing a ruby-accented wati mangalsutra with coordinating bridal bangles.",
@@ -250,7 +239,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 84,
     image: "/photos/photo_15.jpg",
-    badge: { text: "Original Click", variant: "few-left" },
     plating: "Antique Gold Polish",
     stones: "4-Line Black Bead Weave with Heavy Watis",
     description: "Authentic Kolhapuri style 4-line mangalsutra with dense black bead weaving and hand-engraved gold beads.",
@@ -298,7 +286,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 92,
     image: "/photos/photo_13.jpg",
-    badge: { text: "Original Click", variant: "new" },
     plating: "Dual Tone Micro Polish",
     stones: "Emerald Cut Austrian Crystal with Black Bead Chain",
     description: "Refined modern mangalsutra showcasing an emerald-cut crystal solitaire framed in delicate yellow gold prongs.",
@@ -314,7 +301,6 @@ const CURATED_PRODUCTS: Product[] = [
     rating: 4.8,
     reviewsCount: 78,
     image: "/photos/photo_2.jpg",
-    badge: { text: "Original Click", variant: "new" },
     plating: "Antique 24K Matte Polish",
     stones: "Hand Carved Floral Filigree with Screw Pin",
     description: "Handcrafted bridal kadas featuring openable screw lock and regal antique gold filigree.",
@@ -388,6 +374,15 @@ const CURATED_PRODUCTS: Product[] = [
 
 const CURRENT_YEAR = new Date().getFullYear();
 
+// Helper to ensure deprecated badges like "Original Click" are cleanly removed from cached & live states
+const sanitizeProduct = (p: Product): Product => {
+  if (p.badge?.text === "Original Click") {
+    const { badge, ...rest } = p;
+    return rest as Product;
+  }
+  return p;
+};
+
 export default function App() {
   const [currentView, setCurrentView] = useState<"storefront" | "admin">(() => {
     return window.location.hash === "#admin" ? "admin" : "storefront";
@@ -436,15 +431,17 @@ export default function App() {
         if (Array.isArray(parsed) && parsed.length > 0) {
           // Merge with CURATED_PRODUCTS so an accidental single-item overwrite is immediately healed!
           const map = new Map<string, Product>();
-          CURATED_PRODUCTS.forEach((p) => map.set(p.id, p));
-          parsed.forEach((p) => map.set(p.id, p));
-          return Array.from(map.values());
+          CURATED_PRODUCTS.forEach((p) => map.set(p.id, sanitizeProduct(p)));
+          parsed.forEach((p) => map.set(p.id, sanitizeProduct(p)));
+          const cleaned = Array.from(map.values());
+          localStorage.setItem("shambhavi_products_catalog_v2", JSON.stringify(cleaned));
+          return cleaned;
         }
       }
     } catch (e) {
       console.error("Error reading products catalog from localStorage", e);
     }
-    return CURATED_PRODUCTS;
+    return CURATED_PRODUCTS.map(sanitizeProduct);
   });
 
   useEffect(() => {
@@ -462,16 +459,16 @@ export default function App() {
   // Real-time Firestore sync when Firebase is configured
   useEffect(() => {
     // Attempt auto-seed if cloud database is currently unpopulated or missing items
-    autoSeedIfEmpty(CURATED_PRODUCTS, DEFAULT_CATEGORIES, DEFAULT_STORE_SETTINGS);
+    autoSeedIfEmpty(CURATED_PRODUCTS.map(sanitizeProduct), DEFAULT_CATEGORIES, DEFAULT_STORE_SETTINGS);
 
     const unsubProducts = subscribeToFirestoreProducts((liveProducts) => {
       if (liveProducts && liveProducts.length > 0) {
         setProducts((prev) => {
           // Merge live Firestore updates with CURATED_PRODUCTS and prev state so default items are never wiped out
           const map = new Map<string, Product>();
-          CURATED_PRODUCTS.forEach((p) => map.set(p.id, p));
-          prev.forEach((p) => map.set(p.id, p));
-          liveProducts.forEach((p) => map.set(p.id, p));
+          CURATED_PRODUCTS.forEach((p) => map.set(p.id, sanitizeProduct(p)));
+          prev.forEach((p) => map.set(p.id, sanitizeProduct(p)));
+          liveProducts.forEach((p) => map.set(p.id, sanitizeProduct(p)));
 
           const merged = Array.from(map.values());
           localStorage.setItem("shambhavi_products_catalog_v2", JSON.stringify(merged));
@@ -1184,7 +1181,7 @@ export default function App() {
                     onClick={() => setQuickViewProduct(product)}
                   >
                     <div className="relative aspect-[4/5] w-full overflow-hidden bg-white border border-[#D9DCD8]/70 rounded-none shadow-2xs">
-                      {product.badge && (
+                      {product.badge && product.badge.text !== "Original Click" && (
                         <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 flex flex-col gap-1 pointer-events-none z-10">
                           <span className="bg-[#E9CFCB] text-[#1E2321] text-[10px] sm:text-[11px] font-sans font-medium px-1.5 sm:px-2 py-0.5 rounded-[2px] tracking-wide shadow-2xs">
                             {product.badge.text}

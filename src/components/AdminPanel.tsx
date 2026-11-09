@@ -323,7 +323,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     stones: "Traditional Handcrafted Wati",
     description: "",
     shippingStatus: "Ready to Ship",
-    badge: { text: "Original Click", variant: "new" },
   });
 
   // Simulated WhatsApp Inquiries log
@@ -379,7 +378,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       stones: "Traditional Handcrafted Wati",
       description: "Fine handcrafted piece made with care.",
       shippingStatus: "Ready to Ship",
-      badge: { text: "Original Click", variant: "new" },
     });
     setIsAddModalOpen(true);
   };
@@ -458,9 +456,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         rating: 5.0,
         reviewsCount: 1,
         image: formData.image || "/photos/shambhavi_signature_wati_haar.jpg",
-        badge: formData.badge?.text
-          ? formData.badge
-          : { text: "Original Click", variant: "new" },
+        badge:
+          formData.badge?.text && formData.badge.text !== "Original Click"
+            ? formData.badge
+            : undefined,
         plating: formData.plating || "Gold Plated Finish",
         stones: formData.stones || "Authentic Handcrafted Piece",
         description:
@@ -1009,7 +1008,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           )}
                         </td>
                         <td className="py-3 px-4">
-                          {product.badge ? (
+                          {product.badge && product.badge.text !== "Original Click" ? (
                             <span className="px-2 py-0.5 rounded-[2px] text-[0.68rem] font-medium bg-[#9E7D4B]/10 text-[#9E7D4B] border border-[#9E7D4B]/20">
                               {product.badge.text}
                             </span>
@@ -1721,7 +1720,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Bestseller, Few Left, Original Click"
+                    placeholder="e.g. Bestseller, Few Left, New Arrival"
                     value={formData.badge?.text || ""}
                     onChange={(e) =>
                       setFormData({
